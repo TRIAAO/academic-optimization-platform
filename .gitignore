@@ -1,0 +1,64 @@
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
+logs/
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Java / Spring Boot
+target/
+*.class
+*.jar
+*.war
+*.ear
+.mvn/wrapper/maven-wrapper.jar
+
+# Maven
+dependency-reduced-pom.xml
+
+# Node / React / Vite
+node_modules/
+dist/
+build/
+.vite/
+
+# Testes
+coverage/
+
+# Docker
+docker-data/
+
+# Arquivos temporários
+tmp/
+temp/
+
+# Banco local
+*.sqlite
+*.db
+
+# Uploads locais
+uploads/
+storage/
+
+# Certificados
+*.pem
+*.key
+*.crt
+
+# Arquivos compactados
+*.zip
+*.rar
+*.7z
