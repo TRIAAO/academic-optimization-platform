@@ -26,6 +26,10 @@ server:
 app:
   name: Academic Optimization Platform
   company: TRIA Company
+
   jwt:
     secret: ${JWT_SECRET:tria-company-academic-platform-dev-secret-key-change-in-production-2026}
     expiration-minutes: ${JWT_EXPIRATION_MINUTES:1440}
+
+  orcid:
+    base-url: ${ORCID_BASE_URL:https://pub.orcid.org/v3.0}
