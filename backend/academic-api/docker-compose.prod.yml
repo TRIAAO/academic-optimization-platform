@@ -1,0 +1,45 @@
+services:
+  academic_postgres:
+    image: postgres:16-alpine
+    container_name: academic_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: academic_optimization_db
+      POSTGRES_USER: academic_user
+      POSTGRES_PASSWORD: ${ACADEMIC_DB_PASSWORD}
+    volumes:
+      - academic_postgres_data:/var/lib/postgresql/data
+    networks:
+      - academic_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U academic_user -d academic_optimization_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  academic_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: academic_api
+    restart: always
+    depends_on:
+      academic_postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://academic_postgres:5432/academic_optimization_db
+      SPRING_DATASOURCE_USERNAME: academic_user
+      SPRING_DATASOURCE_PASSWORD: ${ACADEMIC_DB_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SERVER_PORT: 8080
+    ports:
+      - "127.0.0.1:8095:8080"
+    networks:
+      - academic_network
+
+volumes:
+  academic_postgres_data:
+
+networks:
+  academic_network:
+    driver: bridge

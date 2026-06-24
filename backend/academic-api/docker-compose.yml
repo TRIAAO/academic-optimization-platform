@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: academic_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: academic_optimization_db
+      POSTGRES_USER: academic_user
+      POSTGRES_PASSWORD: academic_pass
+    ports:
+      - "5439:5432"
+    volumes:
+      - academic_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  academic_postgres_data:
