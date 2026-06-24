@@ -2,6 +2,8 @@ package com.triacompany.academic.common;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -45,6 +47,24 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Validation Error",
                 message,
+                request.getRequestURI()
+        );
+    }
+
+    @ExceptionHandler({
+            BadCredentialsException.class,
+            DisabledException.class
+    })
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiError handleAuthException(
+            RuntimeException exception,
+            HttpServletRequest request
+    ) {
+        return new ApiError(
+                LocalDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                exception.getMessage(),
                 request.getRequestURI()
         );
     }

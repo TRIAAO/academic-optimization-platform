@@ -3,9 +3,9 @@ spring:
     name: academic-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5439/academic_optimization_db
-    username: academic_user
-    password: academic_pass
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5439/academic_optimization_db}
+    username: ${SPRING_DATASOURCE_USERNAME:academic_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:academic_pass}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,8 +21,11 @@ spring:
     locations: classpath:db/migration
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 app:
   name: Academic Optimization Platform
   company: TRIA Company
+  jwt:
+    secret: ${JWT_SECRET:tria-company-academic-platform-dev-secret-key-change-in-production-2026}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:1440}
