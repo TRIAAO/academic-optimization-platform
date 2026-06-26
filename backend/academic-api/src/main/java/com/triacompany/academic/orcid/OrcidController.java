@@ -14,6 +14,7 @@ import java.util.UUID;
 public class OrcidController {
 
     private final OrcidImportService orcidImportService;
+    private final OrcidProfileService orcidProfileService;
 
     @PostMapping("/researchers/{researcherId}/import-works")
     @ResponseStatus(HttpStatus.CREATED)
@@ -32,5 +33,17 @@ public class OrcidController {
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public List<OrcidImportLogResponse> findImportLogsByResearcher(@PathVariable UUID researcherId) {
         return orcidImportService.findImportLogsByResearcher(researcherId);
+    }
+
+    @GetMapping("/researchers/{researcherId}/summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OrcidProfileSummaryResponse findSummaryByResearcher(@PathVariable UUID researcherId) {
+        return orcidProfileService.findSummaryByResearcher(researcherId);
+    }
+
+    @GetMapping("/{orcidId}/summary")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OrcidProfileSummaryResponse findSummaryByOrcidId(@PathVariable String orcidId) {
+        return orcidProfileService.findSummaryByOrcidId(orcidId);
     }
 }

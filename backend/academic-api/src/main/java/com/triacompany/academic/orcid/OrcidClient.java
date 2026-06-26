@@ -17,21 +17,41 @@ public class OrcidClient {
 
     public JsonNode fetchWorks(String orcidId) {
         try {
-            return RestClient.builder()
-                    .baseUrl(orcidBaseUrl)
-                    .defaultHeader(HttpHeaders.ACCEPT, "application/json")
-                    .defaultHeader(HttpHeaders.USER_AGENT, "TRIA-Company-Academic-Optimization-Platform/1.0")
-                    .build()
+            return restClient()
                     .get()
                     .uri("/{orcidId}/works", orcidId)
                     .retrieve()
                     .body(JsonNode.class);
         } catch (RestClientResponseException exception) {
             throw new IllegalArgumentException(
-                    "Erro ao consultar ORCID: " + exception.getStatusCode() + " - " + exception.getResponseBodyAsString()
+                    "Erro ao consultar obras ORCID: " + exception.getStatusCode() + " - " + exception.getResponseBodyAsString()
             );
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Não foi possível consultar o ORCID neste momento.");
+            throw new IllegalArgumentException("Não foi possível consultar as obras do ORCID neste momento.");
         }
+    }
+
+    public JsonNode fetchRecord(String orcidId) {
+        try {
+            return restClient()
+                    .get()
+                    .uri("/{orcidId}/record", orcidId)
+                    .retrieve()
+                    .body(JsonNode.class);
+        } catch (RestClientResponseException exception) {
+            throw new IllegalArgumentException(
+                    "Erro ao consultar perfil ORCID: " + exception.getStatusCode() + " - " + exception.getResponseBodyAsString()
+            );
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Não foi possível consultar o perfil ORCID neste momento.");
+        }
+    }
+
+    private RestClient restClient() {
+        return RestClient.builder()
+                .baseUrl(orcidBaseUrl)
+                .defaultHeader(HttpHeaders.ACCEPT, "application/json")
+                .defaultHeader(HttpHeaders.USER_AGENT, "TRIA-Company-Academic-Optimization-Platform/1.0")
+                .build();
     }
 }
