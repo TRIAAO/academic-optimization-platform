@@ -20,6 +20,12 @@ public class OpenAlexController {
         return openAlexService.findVerifiedAuthor(researcherId);
     }
 
+    @GetMapping("/researchers/{researcherId}/author-candidates")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public List<OpenAlexAuthorCandidateResponse> findAuthorCandidates(@PathVariable UUID researcherId) {
+        return openAlexService.findAuthorCandidates(researcherId);
+    }
+
     @GetMapping("/researchers/{researcherId}/search-works")
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public OpenAlexImportResponse searchWorks(@PathVariable UUID researcherId) {
@@ -30,6 +36,15 @@ public class OpenAlexController {
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public OpenAlexImportResponse importWorks(@PathVariable UUID researcherId) {
         return openAlexService.importWorks(researcherId);
+    }
+
+    @PostMapping("/researchers/{researcherId}/import-works-by-author/{openAlexAuthorShortId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OpenAlexImportResponse importWorksByApprovedAuthor(
+            @PathVariable UUID researcherId,
+            @PathVariable String openAlexAuthorShortId
+    ) {
+        return openAlexService.importWorksByApprovedAuthor(researcherId, openAlexAuthorShortId);
     }
 
     @GetMapping("/researchers/{researcherId}/works")

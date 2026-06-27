@@ -22,7 +22,11 @@ public class OpenAlexClient {
         try {
             return restClient()
                     .get()
-                    .uri("/authors/https://orcid.org/{orcidId}", orcidId)
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/authors/https://orcid.org/" + orcidId)
+                            .queryParam("mailto", mailto)
+                            .build()
+                    )
                     .retrieve()
                     .body(JsonNode.class);
         } catch (RestClientResponseException exception) {
@@ -32,6 +36,31 @@ public class OpenAlexClient {
             );
         } catch (Exception exception) {
             throw new IllegalArgumentException("Não foi possível consultar o autor no OpenAlex neste momento.");
+        }
+    }
+
+    public JsonNode searchAuthorCandidatesByName(String authorName) {
+        try {
+            return restClient()
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/authors")
+                            .queryParam("search", authorName)
+                            .queryParam("per-page", 10)
+                            .queryParam("mailto", mailto)
+                            .build()
+                    )
+                    .retrieve()
+                    .body(JsonNode.class);
+        } catch (RestClientResponseException exception) {
+            throw new IllegalArgumentException(
+                    "Erro ao buscar candidatos de autor no OpenAlex: "
+                            + exception.getStatusCode()
+                            + " - "
+                            + exception.getResponseBodyAsString()
+            );
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Não foi possível buscar candidatos de autor no OpenAlex neste momento.");
         }
     }
 
@@ -63,7 +92,7 @@ public class OpenAlexClient {
 
     /**
      * Método antigo mantido apenas como fallback técnico.
-     * Para importação oficial do projeto, usamos ORCID + Author ID.
+     * A importação oficial deve usar Author ID aprovado pelo administrador.
      */
     public JsonNode searchWorksByAuthorName(String authorName) {
         try {
