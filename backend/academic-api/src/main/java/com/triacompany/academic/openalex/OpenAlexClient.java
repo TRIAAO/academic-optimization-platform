@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 @Component
 @RequiredArgsConstructor
 public class OpenAlexClient {
@@ -20,19 +24,31 @@ public class OpenAlexClient {
 
     public JsonNode fetchAuthorByOrcid(String orcidId) {
         try {
+            String encodedOrcidUrl = URLEncoder.encode(
+                    "https://orcid.org/" + orcidId,
+                    StandardCharsets.UTF_8
+            );
+
+            URI uri = URI.create(
+                    openAlexBaseUrl
+                            + "/authors/"
+                            + encodedOrcidUrl
+                            + "?mailto="
+                            + encode(mailto)
+            );
+
             return restClient()
                     .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/authors/https://orcid.org/" + orcidId)
-                            .queryParam("mailto", mailto)
-                            .build()
-                    )
+                    .uri(uri)
                     .retrieve()
                     .body(JsonNode.class);
+
         } catch (RestClientResponseException exception) {
             throw new IllegalArgumentException(
                     "Autor não encontrado no OpenAlex para o ORCID informado: "
                             + exception.getStatusCode()
+                            + " - "
+                            + exception.getResponseBodyAsString()
             );
         } catch (Exception exception) {
             throw new IllegalArgumentException("Não foi possível consultar o autor no OpenAlex neste momento.");
@@ -41,17 +57,21 @@ public class OpenAlexClient {
 
     public JsonNode searchAuthorCandidatesByName(String authorName) {
         try {
+            URI uri = URI.create(
+                    openAlexBaseUrl
+                            + "/authors?search="
+                            + encode(authorName)
+                            + "&per-page=10"
+                            + "&mailto="
+                            + encode(mailto)
+            );
+
             return restClient()
                     .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/authors")
-                            .queryParam("search", authorName)
-                            .queryParam("per-page", 10)
-                            .queryParam("mailto", mailto)
-                            .build()
-                    )
+                    .uri(uri)
                     .retrieve()
                     .body(JsonNode.class);
+
         } catch (RestClientResponseException exception) {
             throw new IllegalArgumentException(
                     "Erro ao buscar candidatos de autor no OpenAlex: "
@@ -66,18 +86,29 @@ public class OpenAlexClient {
 
     public JsonNode searchWorksByAuthorId(String openAlexAuthorShortId) {
         try {
+            /*
+             * Importante:
+             * Aqui montamos a URL manualmente para evitar que o filtro do OpenAlex
+             * seja codificado de forma incompatível.
+             *
+             * Formato esperado:
+             * /works?filter=authorships.author.id:A5014082506
+             */
+            URI uri = URI.create(
+                    openAlexBaseUrl
+                            + "/works?filter=authorships.author.id:"
+                            + openAlexAuthorShortId
+                            + "&per-page=100"
+                            + "&mailto="
+                            + encode(mailto)
+            );
+
             return restClient()
                     .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/works")
-                            .queryParam("filter", "authorships.author.id:" + openAlexAuthorShortId)
-                            .queryParam("sort", "-publication_date")
-                            .queryParam("per-page", 100)
-                            .queryParam("mailto", mailto)
-                            .build()
-                    )
+                    .uri(uri)
                     .retrieve()
                     .body(JsonNode.class);
+
         } catch (RestClientResponseException exception) {
             throw new IllegalArgumentException(
                     "Erro ao consultar obras do autor no OpenAlex: "
@@ -92,17 +123,21 @@ public class OpenAlexClient {
 
     public JsonNode searchWorksByAuthorName(String authorName) {
         try {
+            URI uri = URI.create(
+                    openAlexBaseUrl
+                            + "/works?search="
+                            + encode(authorName)
+                            + "&per-page=25"
+                            + "&mailto="
+                            + encode(mailto)
+            );
+
             return restClient()
                     .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/works")
-                            .queryParam("search", authorName)
-                            .queryParam("per-page", 25)
-                            .queryParam("mailto", mailto)
-                            .build()
-                    )
+                    .uri(uri)
                     .retrieve()
                     .body(JsonNode.class);
+
         } catch (RestClientResponseException exception) {
             throw new IllegalArgumentException(
                     "Erro ao consultar OpenAlex por nome: "
@@ -117,9 +152,16 @@ public class OpenAlexClient {
 
     private RestClient restClient() {
         return RestClient.builder()
-                .baseUrl(openAlexBaseUrl)
                 .defaultHeader(HttpHeaders.ACCEPT, "application/json")
                 .defaultHeader(HttpHeaders.USER_AGENT, "TRIA-Company-Academic-Optimization-Platform/1.0")
                 .build();
+    }
+
+    private String encode(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        return URLEncoder.encode(value, StandardCharsets.UTF_8);
     }
 }
