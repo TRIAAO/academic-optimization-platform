@@ -15,6 +15,7 @@ public class OrcidController {
 
     private final OrcidImportService orcidImportService;
     private final OrcidProfileService orcidProfileService;
+    private final OrcidProfileSyncService orcidProfileSyncService;
 
     @PostMapping("/researchers/{researcherId}/import-works")
     @ResponseStatus(HttpStatus.CREATED)
@@ -39,6 +40,13 @@ public class OrcidController {
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public OrcidProfileSummaryResponse findSummaryByResearcher(@PathVariable UUID researcherId) {
         return orcidProfileService.findSummaryByResearcher(researcherId);
+    }
+
+    @PostMapping("/researchers/{researcherId}/sync-profile")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OrcidProfileSyncResponse syncProfile(@PathVariable UUID researcherId) {
+        return orcidProfileSyncService.syncProfile(researcherId);
     }
 
     @GetMapping("/{orcidId}/summary")
