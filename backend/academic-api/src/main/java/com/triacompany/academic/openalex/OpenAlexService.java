@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -59,9 +60,11 @@ public class OpenAlexService {
         Researcher researcher = findResearcher(researcherId);
         OpenAlexAuthorResponse verifiedAuthor = findVerifiedAuthor(researcherId);
 
+        String openAlexAuthorShortId = normalizeOpenAlexAuthorId(verifiedAuthor.openAlexAuthorId());
+
         List<OpenAlexWork> parsedWorks = fetchAndParseWorksByAuthorId(
                 researcher,
-                verifiedAuthor.openAlexAuthorId()
+                openAlexAuthorShortId
         );
 
         return new OpenAlexImportResponse(
@@ -81,9 +84,11 @@ public class OpenAlexService {
         Researcher researcher = findResearcher(researcherId);
         OpenAlexAuthorResponse verifiedAuthor = findVerifiedAuthor(researcherId);
 
+        String openAlexAuthorShortId = normalizeOpenAlexAuthorId(verifiedAuthor.openAlexAuthorId());
+
         return importWorksByAuthorId(
                 researcher,
-                verifiedAuthor.openAlexAuthorId(),
+                openAlexAuthorShortId,
                 verifiedAuthor.displayName()
         );
     }
@@ -95,12 +100,12 @@ public class OpenAlexService {
     ) {
         Researcher researcher = findResearcher(researcherId);
 
-        String authorId = normalizeOpenAlexAuthorId(openAlexAuthorShortId);
+        String normalizedAuthorId = normalizeOpenAlexAuthorId(openAlexAuthorShortId);
 
         return importWorksByAuthorId(
                 researcher,
-                authorId,
-                authorId
+                normalizedAuthorId,
+                normalizedAuthorId
         );
     }
 
@@ -135,9 +140,11 @@ public class OpenAlexService {
             String openAlexAuthorId,
             String searchName
     ) {
+        String openAlexAuthorShortId = normalizeOpenAlexAuthorId(openAlexAuthorId);
+
         List<OpenAlexWork> parsedWorks = fetchAndParseWorksByAuthorId(
                 researcher,
-                openAlexAuthorId
+                openAlexAuthorShortId
         );
 
         List<OpenAlexWork> importedWorks = new ArrayList<>();
@@ -171,11 +178,9 @@ public class OpenAlexService {
             Researcher researcher,
             String openAlexAuthorId
     ) {
-        if (!hasText(openAlexAuthorId)) {
-            throw new IllegalArgumentException("Author ID OpenAlex é obrigatório.");
-        }
+        String openAlexAuthorShortId = normalizeOpenAlexAuthorId(openAlexAuthorId);
 
-        JsonNode response = openAlexClient.searchWorksByAuthorId(openAlexAuthorId);
+        JsonNode response = openAlexClient.searchWorksByAuthorId(openAlexAuthorShortId);
         JsonNode results = response.path("results");
 
         List<OpenAlexWork> works = new ArrayList<>();
@@ -449,7 +454,7 @@ public class OpenAlexService {
             return null;
         }
 
-        return java.text.Normalizer.normalize(value, java.text.Normalizer.Form.NFD)
+        return Normalizer.normalize(value, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
                 .toLowerCase()
                 .trim();

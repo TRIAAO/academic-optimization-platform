@@ -64,13 +64,13 @@ public class OpenAlexClient {
         }
     }
 
-    public JsonNode searchWorksByAuthorId(String openAlexAuthorId) {
+    public JsonNode searchWorksByAuthorId(String openAlexAuthorShortId) {
         try {
             return restClient()
                     .get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/works")
-                            .queryParam("filter", "authorships.author.id:" + openAlexAuthorId)
+                            .queryParam("filter", "authorships.author.id:" + openAlexAuthorShortId)
                             .queryParam("sort", "-publication_date")
                             .queryParam("per-page", 100)
                             .queryParam("mailto", mailto)
@@ -90,10 +90,6 @@ public class OpenAlexClient {
         }
     }
 
-    /**
-     * Método antigo mantido apenas como fallback técnico.
-     * A importação oficial deve usar Author ID aprovado pelo administrador.
-     */
     public JsonNode searchWorksByAuthorName(String authorName) {
         try {
             return restClient()
