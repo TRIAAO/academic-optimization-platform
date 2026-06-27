@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -121,6 +122,58 @@ public class OpenAlexService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<OpenAlexWorkResponse> findWorksByResearcherAndStatus(
+            UUID researcherId,
+            PublicationReviewStatus reviewStatus
+    ) {
+        if (!researcherRepository.existsById(researcherId)) {
+            throw new IllegalArgumentException("Pesquisador não encontrado.");
+        }
+
+        return openAlexWorkRepository
+                .findByResearcherIdAndReviewStatusOrderByPublicationYearDescTitleAsc(
+                        researcherId,
+                        reviewStatus
+                )
+                .stream()
+                .map(OpenAlexWorkResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional
+    public OpenAlexWorkResponse confirmWork(UUID workId, OpenAlexWorkReviewRequest request) {
+        OpenAlexWork work = findOpenAlexWork(workId);
+
+        work.setReviewStatus(PublicationReviewStatus.CONFIRMED);
+        work.setReviewNote(normalizeNullable(request != null ? request.reviewNote() : null));
+        work.setReviewedAt(LocalDateTime.now());
+
+        return OpenAlexWorkResponse.fromEntity(openAlexWorkRepository.save(work));
+    }
+
+    @Transactional
+    public OpenAlexWorkResponse rejectWork(UUID workId, OpenAlexWorkReviewRequest request) {
+        OpenAlexWork work = findOpenAlexWork(workId);
+
+        work.setReviewStatus(PublicationReviewStatus.REJECTED);
+        work.setReviewNote(normalizeNullable(request != null ? request.reviewNote() : null));
+        work.setReviewedAt(LocalDateTime.now());
+
+        return OpenAlexWorkResponse.fromEntity(openAlexWorkRepository.save(work));
+    }
+
+    @Transactional
+    public OpenAlexWorkResponse markWorkAsPendingReview(UUID workId, OpenAlexWorkReviewRequest request) {
+        OpenAlexWork work = findOpenAlexWork(workId);
+
+        work.setReviewStatus(PublicationReviewStatus.PENDING_REVIEW);
+        work.setReviewNote(normalizeNullable(request != null ? request.reviewNote() : null));
+        work.setReviewedAt(null);
+
+        return OpenAlexWorkResponse.fromEntity(openAlexWorkRepository.save(work));
+    }
+
     @Transactional
     public OpenAlexCleanupResponse deleteWorksByResearcher(UUID researcherId) {
         Researcher researcher = findResearcher(researcherId);
@@ -212,6 +265,7 @@ public class OpenAlexService {
                     .openAlexUrl(text(result, "id"))
                     .doiUrl(text(result, "doi"))
                     .rawSource("OPENALEX")
+                    .reviewStatus(PublicationReviewStatus.PENDING_REVIEW)
                     .build();
 
             works.add(work);
@@ -321,6 +375,11 @@ public class OpenAlexService {
         }
 
         return score;
+    }
+
+    private OpenAlexWork findOpenAlexWork(UUID workId) {
+        return openAlexWorkRepository.findById(workId)
+                .orElseThrow(() -> new IllegalArgumentException("Obra OpenAlex não encontrada."));
     }
 
     private Researcher findResearcher(UUID researcherId) {

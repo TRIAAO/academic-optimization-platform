@@ -62,6 +62,16 @@ public class OpenAlexWork {
     @Column(name = "raw_source", nullable = false, length = 50)
     private String rawSource;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "review_status", nullable = false, length = 50)
+    private PublicationReviewStatus reviewStatus;
+
+    @Column(name = "review_note", columnDefinition = "TEXT")
+    private String reviewNote;
+
+    @Column(name = "reviewed_at")
+    private LocalDateTime reviewedAt;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -82,6 +92,10 @@ public class OpenAlexWork {
 
         if (rawSource == null || rawSource.isBlank()) {
             rawSource = "OPENALEX";
+        }
+
+        if (reviewStatus == null) {
+            reviewStatus = PublicationReviewStatus.PENDING_REVIEW;
         }
 
         createdAt = now;

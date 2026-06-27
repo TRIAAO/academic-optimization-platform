@@ -1,5 +1,6 @@
 package com.triacompany.academic.openalex;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -51,6 +52,51 @@ public class OpenAlexController {
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public List<OpenAlexWorkResponse> findWorksByResearcher(@PathVariable UUID researcherId) {
         return openAlexService.findWorksByResearcher(researcherId);
+    }
+
+    @GetMapping("/researchers/{researcherId}/works/status/{reviewStatus}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public List<OpenAlexWorkResponse> findWorksByResearcherAndStatus(
+            @PathVariable UUID researcherId,
+            @PathVariable PublicationReviewStatus reviewStatus
+    ) {
+        return openAlexService.findWorksByResearcherAndStatus(researcherId, reviewStatus);
+    }
+
+    @GetMapping("/researchers/{researcherId}/works/pending-review")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public List<OpenAlexWorkResponse> findPendingReviewWorks(@PathVariable UUID researcherId) {
+        return openAlexService.findWorksByResearcherAndStatus(
+                researcherId,
+                PublicationReviewStatus.PENDING_REVIEW
+        );
+    }
+
+    @PatchMapping("/works/{workId}/confirm")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OpenAlexWorkResponse confirmWork(
+            @PathVariable UUID workId,
+            @Valid @RequestBody(required = false) OpenAlexWorkReviewRequest request
+    ) {
+        return openAlexService.confirmWork(workId, request);
+    }
+
+    @PatchMapping("/works/{workId}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OpenAlexWorkResponse rejectWork(
+            @PathVariable UUID workId,
+            @Valid @RequestBody(required = false) OpenAlexWorkReviewRequest request
+    ) {
+        return openAlexService.rejectWork(workId, request);
+    }
+
+    @PatchMapping("/works/{workId}/pending-review")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OpenAlexWorkResponse markWorkAsPendingReview(
+            @PathVariable UUID workId,
+            @Valid @RequestBody(required = false) OpenAlexWorkReviewRequest request
+    ) {
+        return openAlexService.markWorkAsPendingReview(workId, request);
     }
 
     @DeleteMapping("/researchers/{researcherId}/works")

@@ -20,6 +20,9 @@ public record OpenAlexWorkResponse(
         String openAlexUrl,
         String doiUrl,
         String rawSource,
+        PublicationReviewStatus reviewStatus,
+        String reviewNote,
+        LocalDateTime reviewedAt,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -41,6 +44,9 @@ public record OpenAlexWorkResponse(
                 work.getOpenAlexUrl(),
                 work.getDoiUrl(),
                 work.getRawSource(),
+                work.getReviewStatus(),
+                work.getReviewNote(),
+                work.getReviewedAt(),
                 work.getCreatedAt(),
                 work.getUpdatedAt()
         );
