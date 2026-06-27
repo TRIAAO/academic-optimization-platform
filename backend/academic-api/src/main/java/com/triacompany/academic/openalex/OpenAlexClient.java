@@ -18,6 +18,53 @@ public class OpenAlexClient {
     @Value("${app.openalex.mailto}")
     private String mailto;
 
+    public JsonNode fetchAuthorByOrcid(String orcidId) {
+        try {
+            return restClient()
+                    .get()
+                    .uri("/authors/https://orcid.org/{orcidId}", orcidId)
+                    .retrieve()
+                    .body(JsonNode.class);
+        } catch (RestClientResponseException exception) {
+            throw new IllegalArgumentException(
+                    "Autor não encontrado no OpenAlex para o ORCID informado: "
+                            + exception.getStatusCode()
+            );
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Não foi possível consultar o autor no OpenAlex neste momento.");
+        }
+    }
+
+    public JsonNode searchWorksByAuthorId(String openAlexAuthorId) {
+        try {
+            return restClient()
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/works")
+                            .queryParam("filter", "authorships.author.id:" + openAlexAuthorId)
+                            .queryParam("sort", "-publication_date")
+                            .queryParam("per-page", 100)
+                            .queryParam("mailto", mailto)
+                            .build()
+                    )
+                    .retrieve()
+                    .body(JsonNode.class);
+        } catch (RestClientResponseException exception) {
+            throw new IllegalArgumentException(
+                    "Erro ao consultar obras do autor no OpenAlex: "
+                            + exception.getStatusCode()
+                            + " - "
+                            + exception.getResponseBodyAsString()
+            );
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Não foi possível consultar as obras do autor no OpenAlex neste momento.");
+        }
+    }
+
+    /**
+     * Método antigo mantido apenas como fallback técnico.
+     * Para importação oficial do projeto, usamos ORCID + Author ID.
+     */
     public JsonNode searchWorksByAuthorName(String authorName) {
         try {
             return restClient()
@@ -33,10 +80,13 @@ public class OpenAlexClient {
                     .body(JsonNode.class);
         } catch (RestClientResponseException exception) {
             throw new IllegalArgumentException(
-                    "Erro ao consultar OpenAlex: " + exception.getStatusCode() + " - " + exception.getResponseBodyAsString()
+                    "Erro ao consultar OpenAlex por nome: "
+                            + exception.getStatusCode()
+                            + " - "
+                            + exception.getResponseBodyAsString()
             );
         } catch (Exception exception) {
-            throw new IllegalArgumentException("Não foi possível consultar o OpenAlex neste momento.");
+            throw new IllegalArgumentException("Não foi possível consultar o OpenAlex por nome neste momento.");
         }
     }
 

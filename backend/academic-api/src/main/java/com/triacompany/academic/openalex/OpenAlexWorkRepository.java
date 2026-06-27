@@ -10,4 +10,6 @@ public interface OpenAlexWorkRepository extends JpaRepository<OpenAlexWork, UUID
     List<OpenAlexWork> findByResearcherIdOrderByPublicationYearDescTitleAsc(UUID researcherId);
 
     boolean existsByResearcherIdAndOpenAlexId(UUID researcherId, String openAlexId);
+
+    long deleteByResearcherId(UUID researcherId);
 }

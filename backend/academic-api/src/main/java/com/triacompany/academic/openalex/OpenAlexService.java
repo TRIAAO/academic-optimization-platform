@@ -20,15 +20,26 @@ public class OpenAlexService {
     private final OpenAlexWorkRepository openAlexWorkRepository;
 
     @Transactional(readOnly = true)
+    public OpenAlexAuthorResponse findVerifiedAuthor(UUID researcherId) {
+        Researcher researcher = findResearcher(researcherId);
+        String orcidId = normalizeOrcidId(researcher.getOrcidId());
+
+        JsonNode author = openAlexClient.fetchAuthorByOrcid(orcidId);
+
+        return parseAuthor(author);
+    }
+
+    @Transactional(readOnly = true)
     public OpenAlexImportResponse searchWorks(UUID researcherId) {
         Researcher researcher = findResearcher(researcherId);
+        OpenAlexAuthorResponse verifiedAuthor = findVerifiedAuthor(researcherId);
 
-        List<OpenAlexWork> parsedWorks = fetchAndParseWorks(researcher);
+        List<OpenAlexWork> parsedWorks = fetchAndParseWorksByVerifiedAuthor(researcher, verifiedAuthor);
 
         return new OpenAlexImportResponse(
                 researcher.getId(),
                 researcher.getFullName(),
-                researcher.getFullName(),
+                verifiedAuthor.displayName(),
                 parsedWorks.size(),
                 0,
                 parsedWorks.stream()
@@ -40,13 +51,17 @@ public class OpenAlexService {
     @Transactional
     public OpenAlexImportResponse importWorks(UUID researcherId) {
         Researcher researcher = findResearcher(researcherId);
+        OpenAlexAuthorResponse verifiedAuthor = findVerifiedAuthor(researcherId);
 
-        List<OpenAlexWork> parsedWorks = fetchAndParseWorks(researcher);
+        List<OpenAlexWork> parsedWorks = fetchAndParseWorksByVerifiedAuthor(researcher, verifiedAuthor);
         List<OpenAlexWork> importedWorks = new ArrayList<>();
 
         for (OpenAlexWork parsedWork : parsedWorks) {
             if (parsedWork.getOpenAlexId() == null ||
-                    openAlexWorkRepository.existsByResearcherIdAndOpenAlexId(researcher.getId(), parsedWork.getOpenAlexId())) {
+                    openAlexWorkRepository.existsByResearcherIdAndOpenAlexId(
+                            researcher.getId(),
+                            parsedWork.getOpenAlexId()
+                    )) {
                 continue;
             }
 
@@ -57,7 +72,7 @@ public class OpenAlexService {
         return new OpenAlexImportResponse(
                 researcher.getId(),
                 researcher.getFullName(),
-                researcher.getFullName(),
+                verifiedAuthor.displayName(),
                 parsedWorks.size(),
                 importedWorks.size(),
                 importedWorks.stream()
@@ -78,8 +93,29 @@ public class OpenAlexService {
                 .toList();
     }
 
-    private List<OpenAlexWork> fetchAndParseWorks(Researcher researcher) {
-        JsonNode response = openAlexClient.searchWorksByAuthorName(researcher.getFullName());
+    @Transactional
+    public OpenAlexCleanupResponse deleteWorksByResearcher(UUID researcherId) {
+        Researcher researcher = findResearcher(researcherId);
+
+        long deleted = openAlexWorkRepository.deleteByResearcherId(researcherId);
+
+        return new OpenAlexCleanupResponse(
+                researcher.getId(),
+                researcher.getFullName(),
+                Math.toIntExact(deleted),
+                "Obras OpenAlex removidas com sucesso para reimportação validada."
+        );
+    }
+
+    private List<OpenAlexWork> fetchAndParseWorksByVerifiedAuthor(
+            Researcher researcher,
+            OpenAlexAuthorResponse verifiedAuthor
+    ) {
+        if (!hasText(verifiedAuthor.openAlexAuthorId())) {
+            throw new IllegalArgumentException("Autor OpenAlex validado não possui ID.");
+        }
+
+        JsonNode response = openAlexClient.searchWorksByAuthorId(verifiedAuthor.openAlexAuthorId());
         JsonNode results = response.path("results");
 
         List<OpenAlexWork> works = new ArrayList<>();
@@ -119,9 +155,48 @@ public class OpenAlexService {
         return works;
     }
 
+    private OpenAlexAuthorResponse parseAuthor(JsonNode author) {
+        String openAlexAuthorId = text(author, "id");
+        String orcid = text(author, "orcid");
+        String displayName = text(author, "display_name");
+        Integer worksCount = integer(author, "works_count");
+        Integer citedByCount = integer(author, "cited_by_count");
+
+        if (!hasText(openAlexAuthorId)) {
+            throw new IllegalArgumentException("Autor OpenAlex inválido ou sem ID.");
+        }
+
+        return new OpenAlexAuthorResponse(
+                openAlexAuthorId,
+                orcid,
+                displayName,
+                worksCount,
+                citedByCount
+        );
+    }
+
     private Researcher findResearcher(UUID researcherId) {
         return researcherRepository.findById(researcherId)
                 .orElseThrow(() -> new IllegalArgumentException("Pesquisador não encontrado."));
+    }
+
+    private String normalizeOrcidId(String value) {
+        String normalized = normalizeNullable(value);
+
+        if (normalized == null) {
+            throw new IllegalArgumentException("Este pesquisador não possui ORCID informado.");
+        }
+
+        normalized = normalized
+                .replace("https://orcid.org/", "")
+                .replace("http://orcid.org/", "")
+                .trim();
+
+        if (!normalized.matches("\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]")) {
+            throw new IllegalArgumentException("ORCID inválido. Use o formato 0000-0000-0000-0000.");
+        }
+
+        return normalized;
     }
 
     private String text(JsonNode node, String... path) {
