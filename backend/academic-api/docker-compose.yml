@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: academic_optimization_db
       POSTGRES_USER: academic_user
-      POSTGRES_PASSWORD: academic_pass
+      POSTGRES_PASSWORD: ${ACADEMIC_DB_PASSWORD}
     ports:
       - "5439:5432"
     volumes:
