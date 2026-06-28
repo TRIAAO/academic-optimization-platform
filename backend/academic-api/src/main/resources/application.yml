@@ -41,3 +41,14 @@ app:
   crossref:
     base-url: ${CROSSREF_BASE_URL:https://api.crossref.org}
     mailto: ${CROSSREF_MAILTO:geral@triacompany.com}
+
+    springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
