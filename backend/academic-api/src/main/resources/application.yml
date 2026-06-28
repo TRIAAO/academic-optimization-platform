@@ -37,3 +37,7 @@ app:
   openalex:
     base-url: ${OPENALEX_BASE_URL:https://api.openalex.org}
     mailto: ${OPENALEX_MAILTO:geral@triacompany.com}
+
+  crossref:
+    base-url: ${CROSSREF_BASE_URL:https://api.crossref.org}
+    mailto: ${CROSSREF_MAILTO:geral@triacompany.com}
