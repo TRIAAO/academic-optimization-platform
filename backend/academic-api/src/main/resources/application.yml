@@ -1,11 +1,18 @@
+server:
+  port: ${SERVER_PORT:8080}
+
 spring:
   application:
     name: academic-api
 
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5439/academic_optimization_db}
-    username: ${SPRING_DATASOURCE_USERNAME:academic_user}
-    password: ${SPRING_DATASOURCE_PASSWORD:academic_pass}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/academic_optimization_db}
+    username: ${DATABASE_USERNAME:academic_user}
+    password: ${DATABASE_PASSWORD:academic_password}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -15,13 +22,25 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        jdbc:
+          time_zone: UTC
+    show-sql: false
 
   flyway:
     enabled: true
     locations: classpath:db/migration
+    baseline-on-migrate: true
 
-server:
-  port: ${SERVER_PORT:8080}
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
 
 app:
   name: Academic Optimization Platform
@@ -42,13 +61,9 @@ app:
     base-url: ${CROSSREF_BASE_URL:https://api.crossref.org}
     mailto: ${CROSSREF_MAILTO:geral@triacompany.com}
 
-    springdoc:
-  api-docs:
-    enabled: true
-    path: /v3/api-docs
-  swagger-ui:
-    enabled: true
-    path: /swagger-ui.html
-    operations-sorter: method
-    tags-sorter: alpha
-    display-request-duration: true
+logging:
+  level:
+    root: INFO
+    com.triacompany.academic: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
