@@ -1,100 +1,20 @@
-import {
-  Activity,
-  BarChart3,
-  BookOpenCheck,
-  ClipboardCheck,
-  Database,
-  FileText,
-  GraduationCap,
-  History,
-  LayoutDashboard,
-  LibraryBig,
-  Link2,
-  Network,
-  ShieldCheck,
-  UserRoundSearch,
-  X
-} from "lucide-react";
+import { BarChart3, ShieldCheck, X } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { APP_CONFIG } from "../../config/app";
-
-const navigation = [
-  {
-    name: "Dashboard Institucional",
-    href: "/admin/dashboard",
-    icon: LayoutDashboard,
-    enabled: true
-  },
-  {
-    name: "Pesquisadores",
-    href: "/admin/researchers",
-    icon: UserRoundSearch,
-    enabled: false
-  },
-  {
-    name: "Perfil Acadêmico",
-    href: "/admin/academic-profiles",
-    icon: GraduationCap,
-    enabled: false
-  },
-  {
-    name: "ORCID",
-    href: "/admin/orcid",
-    icon: Link2,
-    enabled: false
-  },
-  {
-    name: "OpenAlex",
-    href: "/admin/openalex",
-    icon: Network,
-    enabled: false
-  },
-  {
-    name: "Crossref / DOI",
-    href: "/admin/crossref",
-    icon: LibraryBig,
-    enabled: false
-  },
-  {
-    name: "Relatórios",
-    href: "/admin/reports",
-    icon: FileText,
-    enabled: false
-  },
-  {
-    name: "Google Acadêmico",
-    href: "/admin/google-scholar-checklist",
-    icon: ClipboardCheck,
-    enabled: false
-  },
-  {
-    name: "Auditoria",
-    href: "/admin/audit",
-    icon: History,
-    enabled: false
-  },
-  {
-    name: "Status Operacional",
-    href: "/admin/status",
-    icon: Activity,
-    enabled: false
-  }
-];
+import { ADMIN_MODULES } from "../../config/modules";
 
 function SidebarContent({ onClose }) {
   return (
     <div className="flex h-full flex-col bg-slate-950 text-white">
       <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-900/30">
-              <BarChart3 className="h-6 w-6" />
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-900/30">
+            <BarChart3 className="h-6 w-6" />
+          </div>
 
-            <div>
-              <p className="text-sm font-semibold leading-5">IMETRO</p>
-              <p className="text-xs text-slate-400">Painel Acadêmico</p>
-            </div>
+          <div>
+            <p className="text-sm font-semibold leading-5">IMETRO</p>
+            <p className="text-xs text-slate-400">Painel Acadêmico</p>
           </div>
         </div>
 
@@ -110,31 +30,12 @@ function SidebarContent({ onClose }) {
 
       <div className="flex-1 overflow-y-auto px-4 py-5">
         <nav className="space-y-1">
-          {navigation.map((item) => {
+          {ADMIN_MODULES.map((item) => {
             const Icon = item.icon;
-
-            if (!item.enabled) {
-              return (
-                <div
-                  key={item.name}
-                  className="flex cursor-not-allowed items-center justify-between rounded-2xl px-3 py-3 text-sm text-slate-500"
-                  title="Será implementado nos próximos módulos do frontend"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5" />
-                    <span>{item.name}</span>
-                  </div>
-
-                  <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-500">
-                    breve
-                  </span>
-                </div>
-              );
-            }
 
             return (
               <NavLink
-                key={item.name}
+                key={item.key}
                 to={item.href}
                 onClick={onClose}
                 className={({ isActive }) =>
@@ -160,7 +61,9 @@ function SidebarContent({ onClose }) {
             <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-400" />
 
             <div>
-              <p className="text-xs font-semibold text-white">Regra de segurança</p>
+              <p className="text-xs font-semibold text-white">
+                Regra de segurança
+              </p>
               <p className="mt-1 text-xs leading-5 text-slate-400">
                 Google Acadêmico apenas como checklist manual. Sem automação,
                 scraping ou alteração direta.
