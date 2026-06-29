@@ -1,0 +1,26 @@
+{
+  "name": "academic-optimization-platform-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Frontend administrativo da Plataforma de Otimização Acadêmica da Universidade Metropolitana de Angola / IMETRO, executado pela TRIA Company.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "echo \"Lint será configurado na próxima etapa\""
+  },
+  "dependencies": {
+    "axios": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "@vitejs/plugin-react": "latest",
+    "tailwindcss": "^4.3.1",
+    "vite": "latest"
+  }
+}
