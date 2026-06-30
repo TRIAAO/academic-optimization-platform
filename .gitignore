@@ -62,3 +62,5 @@ storage/
 *.zip
 *.rar
 *.7z
+# Frontend separado para deploy na Vercel
+frontend/
