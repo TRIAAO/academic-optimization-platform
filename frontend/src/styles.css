@@ -55,3 +55,37 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: #64748b;
 }
+
+@media print {
+  body {
+    background: #ffffff !important;
+  }
+
+  aside,
+  header,
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+
+  .rounded-3xl,
+  .rounded-\[2rem\],
+  .rounded-2xl {
+    border-radius: 12px !important;
+  }
+
+  pre {
+    white-space: pre-wrap !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+}

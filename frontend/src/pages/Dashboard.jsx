@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   BookOpenCheck,
+  ClipboardCheck,
   Database,
   FileText,
   GraduationCap,
@@ -9,11 +10,14 @@ import {
   LibraryBig,
   Link2,
   Network,
+  RefreshCw,
   ShieldCheck,
   UserRoundSearch
 } from "lucide-react";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import PageHeader from "../components/ui/PageHeader";
+import PrimaryButton from "../components/ui/PrimaryButton";
 import StatCard from "../components/ui/StatCard";
 import { APP_CONFIG } from "../config/app";
 import { dashboardService } from "../services/dashboardService";
@@ -74,14 +78,16 @@ export default function Dashboard() {
   }, []);
 
   if (loading) {
-    return <LoadingState message="Buscando dados institucionais na API em produção..." />;
+    return (
+      <LoadingState message="Consolidando dados institucionais da API em produção..." />
+    );
   }
 
   const stats = [
     {
       title: "Pesquisadores",
       value: formatNumber(dashboard?.totalResearchers),
-      description: "Registros de pesquisadores cadastrados no backend.",
+      description: "Registros de pesquisadores cadastrados.",
       icon: UserRoundSearch
     },
     {
@@ -93,37 +99,37 @@ export default function Dashboard() {
     {
       title: "Pesquisadores com ORCID",
       value: formatNumber(dashboard?.researchersWithOrcid),
-      description: "Integração e sincronização com ORCID.",
+      description: "Pesquisadores com ORCID informado no cadastro.",
       icon: Link2
     },
     {
-      title: "Candidatos OpenAlex",
-      value: formatNumber(dashboard?.openAlexCandidates),
-      description: "Obras candidatas para revisão e validação.",
+      title: "Obras ORCID",
+      value: formatNumber(dashboard?.totalOrcidWorks),
+      description: "Obras importadas ou vinculadas via ORCID.",
+      icon: BookOpenCheck
+    },
+    {
+      title: "Obras OpenAlex",
+      value: formatNumber(dashboard?.totalOpenAlexWorks),
+      description: "Obras encontradas ou importadas do OpenAlex.",
       icon: Network
     },
     {
       title: "Obras Revisadas",
       value: formatNumber(dashboard?.reviewedWorks),
-      description: "Revisão manual de obras vindas do OpenAlex.",
-      icon: BookOpenCheck
+      description: "Obras confirmadas ou rejeitadas na revisão manual.",
+      icon: ClipboardCheck
     },
     {
       title: "DOIs Validados",
       value: formatNumber(dashboard?.validatedDois),
-      description: "Validação DOI e metadados via Crossref.",
+      description: "Validações DOI e metadados via Crossref.",
       icon: LibraryBig
-    },
-    {
-      title: "Relatórios",
-      value: formatNumber(dashboard?.optimizationReports),
-      description: "Relatórios de otimização acadêmica gerados.",
-      icon: FileText
     },
     {
       title: "Eventos de Auditoria",
       value: formatNumber(dashboard?.auditEvents),
-      description: "Rastreabilidade das ações executadas no sistema.",
+      description: "Eventos de rastreabilidade encontrados.",
       icon: History
     }
   ];
@@ -143,10 +149,16 @@ export default function Dashboard() {
             </h2>
 
             <p className="mt-4 max-w-3xl text-sm leading-7 text-slate-300 sm:text-base">
-              Visão executiva da plataforma acadêmica: pesquisadores, ORCID,
-              OpenAlex, Crossref, relatórios, PDF, auditoria, checklist Google
-              Acadêmico e status operacional.
+              Visão executiva consolidada da plataforma acadêmica: pesquisadores,
+              perfis, ORCID, OpenAlex, Crossref, relatórios, auditoria, checklist
+              Google Acadêmico e status operacional.
             </p>
+
+            <div className="mt-6">
+              <PrimaryButton variant="light" icon={RefreshCw} onClick={loadDashboard}>
+                Atualizar dashboard
+              </PrimaryButton>
+            </div>
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/10 p-5">
@@ -217,7 +229,7 @@ export default function Dashboard() {
                 Aplicação
               </p>
               <p className="mt-2 font-bold text-slate-950">
-                {status?.api || "Academic API"}
+                {status?.api || "Academic Optimization Platform API"}
               </p>
             </div>
 
@@ -254,8 +266,8 @@ export default function Dashboard() {
           <h3 className="font-bold text-slate-950">OpenAPI JSON</h3>
 
           <p className="mt-2 text-sm leading-6 text-slate-500">
-            Swagger UI foi desativado de propósito. O frontend deve usar apenas
-            o contrato JSON em produção.
+            Swagger UI foi desativado de propósito. O frontend usa o contrato
+            JSON publicado em produção.
           </p>
 
           <div className="mt-6 space-y-3">
@@ -289,11 +301,57 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-amber-200 bg-amber-50 p-6">
-        <h3 className="font-bold text-amber-950">Checklist Google Acadêmico</h3>
-        <p className="mt-2 text-sm leading-7 text-amber-900">
-          {APP_CONFIG.googleScholarPolicy}
-        </p>
+      <section className="grid gap-6 xl:grid-cols-3">
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="font-black text-slate-950">Revisão Manual</h3>
+
+          <div className="mt-5 space-y-3">
+            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
+              <span className="text-sm font-semibold text-slate-600">
+                Pendentes
+              </span>
+              <span className="text-xl font-black text-amber-600">
+                {formatNumber(dashboard?.pendingReviewWorks)}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
+              <span className="text-sm font-semibold text-slate-600">
+                Confirmadas
+              </span>
+              <span className="text-xl font-black text-emerald-600">
+                {formatNumber(dashboard?.confirmedWorks)}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-4">
+              <span className="text-sm font-semibold text-slate-600">
+                Rejeitadas
+              </span>
+              <span className="text-xl font-black text-red-600">
+                {formatNumber(dashboard?.rejectedWorks)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm xl:col-span-2">
+          <h3 className="font-black text-slate-950">
+            Checklist Google Acadêmico
+          </h3>
+
+          <p className="mt-3 text-sm leading-7 text-slate-600">
+            {APP_CONFIG.googleScholarPolicy}
+          </p>
+
+          <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm leading-7 text-amber-900">
+              O painel apenas orienta o pesquisador a revisar manualmente seu
+              perfil no Google Acadêmico. As integrações automáticas permitidas
+              continuam sendo ORCID, OpenAlex e Crossref.
+            </p>
+          </div>
+        </div>
       </section>
     </div>
   );
