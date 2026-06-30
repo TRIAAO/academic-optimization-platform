@@ -63,7 +63,6 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:5173",
                 "http://127.0.0.1:5173",
@@ -72,13 +71,13 @@ public class SecurityConfig {
 
                 "https://academic-api.triacompany.com",
                 "https://academic.triacompany.com",
-                "https://academic.triacompany.com.br",
+                "https://imetro.academic.triacompany.com",
                 "https://academic-optimization-platform.vercel.app",
                 "https://*.vercel.app",
                 "https://*.triacompany.com"
         ));
 
-        configuration.setAllowedMethods(List.of(
+                configuration.setAllowedMethods(List.of(
                 "GET",
                 "POST",
                 "PUT",
