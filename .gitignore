@@ -11,12 +11,13 @@ Thumbs.db
 *.log
 logs/
 
-# Variáveis de ambiente
+# Variáveis de ambiente sensíveis
 .env
 .env.local
-.env.development
-.env.production
 .env.test
+
+# Backend secrets
+backend/academic-api/.env
 
 # Java / Spring Boot
 target/
@@ -34,6 +35,11 @@ node_modules/
 dist/
 build/
 .vite/
+
+# Frontend local gerado
+frontend/node_modules/
+frontend/dist/
+frontend/.env
 
 # Testes
 coverage/
@@ -62,5 +68,3 @@ storage/
 *.zip
 *.rar
 *.7z
-# Frontend separado para deploy na Vercel
-frontend/
