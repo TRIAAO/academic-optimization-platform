@@ -79,6 +79,45 @@ public class CrossrefClient {
         }
     }
 
+    public JsonNode searchSimilarJournalArticles(String bibliographicQuery, int rows) {
+        if (bibliographicQuery == null || bibliographicQuery.isBlank()) {
+            throw new IllegalArgumentException("O texto bibliográfico para busca é obrigatório.");
+        }
+
+        int normalizedRows = Math.max(1, Math.min(rows, 50));
+
+        try {
+            URI uri = URI.create(
+                    crossrefBaseUrl
+                            + "/works?query.bibliographic="
+                            + encode(bibliographicQuery)
+                            + "&filter=type:journal-article"
+                            + "&rows="
+                            + normalizedRows
+                            + "&mailto="
+                            + encode(mailto)
+            );
+
+            return restClient()
+                    .get()
+                    .uri(uri)
+                    .retrieve()
+                    .body(JsonNode.class);
+
+        } catch (RestClientResponseException exception) {
+            throw new IllegalArgumentException(
+                    "Erro ao buscar publicações relacionadas no Crossref: "
+                            + exception.getStatusCode()
+                            + " - "
+                            + exception.getResponseBodyAsString()
+            );
+        } catch (Exception exception) {
+            throw new IllegalArgumentException(
+                    "Não foi possível buscar publicações relacionadas no Crossref neste momento."
+            );
+        }
+    }
+
     private RestClient restClient() {
         return RestClient.builder()
                 .defaultHeader(HttpHeaders.ACCEPT, "application/json")
