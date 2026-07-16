@@ -4,6 +4,7 @@ import TechnicalRoute from "./routes/TechnicalRoute";
 import AdminLayout from "./layouts/AdminLayout";
 import AcademicProfiles from "./pages/AcademicProfiles";
 import AcademicOptimization from "./pages/AcademicOptimization";
+import AcademicRecommendations from "./pages/AcademicRecommendations";
 import Audit from "./pages/Audit";
 import Crossref from "./pages/Crossref";
 import Dashboard from "./pages/Dashboard";
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="crossref" element={<Crossref />} />
           <Route path="reports" element={<Reports />} />
           <Route path="optimization" element={<AcademicOptimization />} />
+          <Route path="recommendations" element={<AcademicRecommendations />} />
           <Route
             path="scientometric-metrics"
             element={<ScientometricMetrics />}
