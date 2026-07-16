@@ -17,6 +17,7 @@ import Orcid from "./pages/Orcid";
 import Reports from "./pages/Reports";
 import ResearcherDetails from "./pages/ResearcherDetails";
 import Researchers from "./pages/Researchers";
+import ScientometricMetrics from "./pages/ScientometricMetrics";
 
 export default function App() {
   return (
@@ -39,6 +40,10 @@ export default function App() {
           <Route path="manual-review" element={<ManualReview />} />
           <Route path="crossref" element={<Crossref />} />
           <Route path="reports" element={<Reports />} />
+          <Route
+            path="scientometric-metrics"
+            element={<ScientometricMetrics />}
+          />
           <Route
             path="google-scholar-checklist"
             element={<GoogleScholarChecklist />}

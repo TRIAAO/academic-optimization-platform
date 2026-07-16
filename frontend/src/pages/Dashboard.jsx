@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   AlertTriangle,
   ArrowRight,
+  BarChart3,
   BookOpenCheck,
   CheckCircle2,
   ClipboardCheck,
@@ -441,6 +442,13 @@ export default function Dashboard() {
             description="Gerar relatórios de otimização acadêmica dos pesquisadores."
             href="/admin/reports"
             icon={FileText}
+          />
+
+          <ActionCard
+            title="Métricas Cientométricas"
+            description="Acompanhar citações, H-index, i10-index, D-index e evolução histórica."
+            href="/admin/scientometric-metrics"
+            icon={BarChart3}
           />
         </div>
       </section>

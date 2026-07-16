@@ -1,5 +1,12 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, BookOpenCheck, FileText, Link2, RefreshCw } from "lucide-react";
+import {
+  ArrowLeft,
+  BarChart3,
+  BookOpenCheck,
+  FileText,
+  Link2,
+  RefreshCw
+} from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import AcademicProfileForm from "../components/academicProfiles/AcademicProfileForm";
 import ResearcherForm from "../components/researchers/ResearcherForm";
@@ -163,6 +170,12 @@ export default function ResearcherDetails() {
             <Link to="/admin/researchers">
               <PrimaryButton variant="light" icon={ArrowLeft}>
                 Voltar
+              </PrimaryButton>
+            </Link>
+
+            <Link to={`/admin/scientometric-metrics?researcherId=${id}`}>
+              <PrimaryButton variant="light" icon={BarChart3}>
+                Métricas
               </PrimaryButton>
             </Link>
 

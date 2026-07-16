@@ -1,5 +1,6 @@
 import {
   Activity,
+  BarChart3,
   BookOpenCheck,
   ClipboardCheck,
   FileText,
@@ -85,6 +86,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Relatórios de otimização acadêmica e exportação PDF."
+  },
+  {
+    key: "scientometric-metrics",
+    name: "Métricas Cientométricas",
+    href: "/admin/scientometric-metrics",
+    icon: BarChart3,
+    enabled: true,
+    technical: false,
+    description: "Citações, H-index, i10-index, D-index e histórico manual."
   },
   {
     key: "google-scholar",
