@@ -5,6 +5,7 @@ import {
   BookOpenCheck,
   BrainCircuit,
   FileText,
+  Languages,
   Link2,
   RefreshCw
 } from "lucide-react";
@@ -183,6 +184,12 @@ export default function ResearcherDetails() {
             <Link to={`/admin/recommendations?researcherId=${id}`}>
               <PrimaryButton variant="light" icon={BrainCircuit}>
                 Recomendações
+              </PrimaryButton>
+            </Link>
+
+            <Link to={`/admin/abstract-analysis?researcherId=${id}`}>
+              <PrimaryButton variant="light" icon={Languages}>
+                Abstracts
               </PrimaryButton>
             </Link>
 

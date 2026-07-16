@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   LibraryBig,
   Link2,
+  Languages,
   Network,
   Sparkles,
   ShieldCheck,
@@ -97,6 +98,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Temas, colaboradores e veículos científicos baseados em evidências."
+  },
+  {
+    key: "abstract-analysis",
+    name: "Análise de Abstracts",
+    href: "/admin/abstract-analysis",
+    icon: Languages,
+    enabled: true,
+    technical: false,
+    description: "Cobertura PT–EN e temas recorrentes dos abstracts confirmados."
   },
   {
     key: "reports",

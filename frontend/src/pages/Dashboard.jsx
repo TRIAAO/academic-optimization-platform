@@ -11,6 +11,7 @@ import {
   FileText,
   GraduationCap,
   LibraryBig,
+  Languages,
   Link2,
   Network,
   RefreshCw,
@@ -450,6 +451,13 @@ export default function Dashboard() {
             description="Priorizar temas, colaboradores e veículos científicos com evidências rastreáveis."
             href="/admin/recommendations"
             icon={BrainCircuit}
+          />
+
+          <ActionCard
+            title="Análise de Abstracts"
+            description="Acompanhar temas recorrentes e cobertura manual dos abstracts em português e inglês."
+            href="/admin/abstract-analysis"
+            icon={Languages}
           />
 
           <ActionCard

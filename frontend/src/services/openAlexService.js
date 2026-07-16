@@ -69,6 +69,14 @@ export const openAlexService = {
     return unwrapList(response.data);
   },
 
+  async syncAbstracts(researcherId) {
+    const response = await apiClient.post(
+      `/api/v1/openalex/researchers/${researcherId}/sync-abstracts`
+    );
+
+    return response.data;
+  },
+
   async findWorksByResearcherAndStatus(researcherId, reviewStatus) {
     const response = await apiClient.get(
       `/api/v1/openalex/researchers/${researcherId}/works/status/${reviewStatus}`

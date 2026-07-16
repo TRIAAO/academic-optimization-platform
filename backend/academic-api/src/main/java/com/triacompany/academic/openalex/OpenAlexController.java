@@ -54,6 +54,12 @@ public class OpenAlexController {
         return openAlexService.findWorksByResearcher(researcherId);
     }
 
+    @PostMapping("/researchers/{researcherId}/sync-abstracts")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OpenAlexAbstractSyncResponse syncAbstracts(@PathVariable UUID researcherId) {
+        return openAlexService.syncAbstracts(researcherId);
+    }
+
     @GetMapping("/researchers/{researcherId}/works/status/{reviewStatus}")
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public List<OpenAlexWorkResponse> findWorksByResearcherAndStatus(
