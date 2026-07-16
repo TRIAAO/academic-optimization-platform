@@ -33,6 +33,11 @@ public class AcademicRecommendationEngine {
             "model", "para", "paper", "pesquisa", "research", "resultados", "results", "review", "revisao",
             "sobre", "study", "system", "sistema", "through", "towards", "using", "utilizacao", "with"
     );
+    private static final Set<String> PRODUCTION_METADATA_TERMS = Set.of(
+            "alfalit", "brasil", "brazil", "edicao", "edition", "editora", "editorial",
+            "isbn", "issn", "luanda", "pagina", "paginas", "press", "publisher", "publishing",
+            "volume", "volumes"
+    );
 
     public AcademicRecommendationResponse generate(RecommendationContext context) {
         List<MergedWork> works = mergeWorks(context.works());
@@ -99,6 +104,7 @@ public class AcademicRecommendationEngine {
                         candidate.normalized,
                         context.researcherName()
                 ))
+                .filter(this::isEligibleKeywordCandidate)
                 .filter(candidate -> candidate.profileSeed || candidate.productionEvidence >= 2)
                 .sorted(keywordComparator())
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
@@ -113,6 +119,8 @@ public class AcademicRecommendationEngine {
                             candidate.normalized,
                             context.researcherName()
                     ))
+                    .filter(this::isEligibleKeywordCandidate)
+                    .filter(candidate -> candidate.profileSeed || candidate.productionEvidence >= 2)
                     .sorted(keywordComparator())
                     .limit(8L - ranked.size())
                     .forEach(ranked::add);
@@ -501,6 +509,16 @@ public class AcademicRecommendationEngine {
         return !candidateTokens.isEmpty()
                 && !nameTokens.isEmpty()
                 && candidateTokens.stream().allMatch(nameTokens::contains);
+    }
+
+    private boolean isEligibleKeywordCandidate(KeywordCandidate candidate) {
+        if (candidate.profileSeed) {
+            return true;
+        }
+
+        List<String> tokens = List.of(candidate.normalized.split(" "));
+        return tokens.size() >= 2
+                && tokens.stream().noneMatch(PRODUCTION_METADATA_TERMS::contains);
     }
 
     private Set<String> researcherNameTokens(String researcherName) {
