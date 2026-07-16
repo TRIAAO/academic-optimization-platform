@@ -438,6 +438,13 @@ export default function Dashboard() {
           />
 
           <ActionCard
+            title="Otimização Acadêmica"
+            description="Analisar score, recomendações, integridade e plano de ação por pesquisador."
+            href="/admin/optimization"
+            icon={Sparkles}
+          />
+
+          <ActionCard
             title="Relatórios"
             description="Gerar relatórios de otimização acadêmica dos pesquisadores."
             href="/admin/reports"

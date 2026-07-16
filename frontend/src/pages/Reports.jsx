@@ -30,9 +30,31 @@ function downloadBlob(blob, filename) {
 function getPriorityVariant(priority) {
   const normalized = String(priority || "").toUpperCase();
 
-  if (normalized === "ALTA") return "red";
-  if (normalized === "MÉDIA" || normalized === "MEDIA") return "amber";
+  if (normalized === "ALTA" || normalized === "HIGH") return "red";
+  if (
+    normalized === "MÉDIA" ||
+    normalized === "MEDIA" ||
+    normalized === "MEDIUM"
+  ) {
+    return "amber";
+  }
   return "blue";
+}
+
+function getReportScore(report) {
+  return report?.overallScore ?? report?.score ?? 0;
+}
+
+function getReportMetric(report, key) {
+  return report?.[key] ?? report?.summary?.[key] ?? 0;
+}
+
+function getRecommendationTitle(recommendation) {
+  return recommendation?.area || recommendation?.title || "Otimização";
+}
+
+function getRecommendationDescription(recommendation) {
+  return recommendation?.recommendation || recommendation?.description || "";
 }
 
 export default function Reports() {
@@ -85,15 +107,11 @@ export default function Reports() {
     setSuccess("");
 
     try {
-      const [list, latest] = await Promise.all([
-        reportService.findByResearcher(researcherId),
-        reportService.findLatestByResearcher(researcherId)
-      ]);
-
-      const nextReports = list.length > 0 ? list : latest ? [latest] : [];
+      const latest = await reportService.findLatestByResearcher(researcherId);
+      const nextReports = latest ? [latest] : [];
 
       setReports(nextReports);
-      setSelectedReport(latest || nextReports[0] || null);
+      setSelectedReport(latest || null);
     } catch (apiError) {
       setError(apiError?.message || "Não foi possível carregar relatórios.");
     } finally {
@@ -111,9 +129,8 @@ export default function Reports() {
     try {
       const report = await reportService.generateByResearcher(selectedResearcherId);
       setSelectedReport(report);
-      setSuccess("Relatório de otimização acadêmica gerado com sucesso.");
-
-      await loadReports(selectedResearcherId);
+      setReports([report]);
+      setSuccess("Relatório de otimização acadêmica atualizado com sucesso.");
     } catch (apiError) {
       setError(apiError?.message || "Não foi possível gerar relatório.");
     } finally {
@@ -278,7 +295,7 @@ export default function Reports() {
 
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
-                    Relatórios locais
+                    Análises disponíveis
                   </p>
                   <p className="mt-2 font-black text-slate-950">
                     {formatNumber(reports.length)}
@@ -322,7 +339,7 @@ export default function Reports() {
 
                 {filteredReports.length === 0 ? (
                   <p className="text-sm text-slate-500">
-                    Nenhum relatório encontrado. Clique em gerar relatório.
+                    Nenhum relatório encontrado. Clique em atualizar relatório.
                   </p>
                 ) : (
                   <div className="space-y-3">
@@ -382,28 +399,31 @@ export default function Reports() {
                         <div className="rounded-2xl bg-white/10 p-4">
                           <p className="text-xs text-slate-300">Score</p>
                           <p className="mt-2 text-3xl font-black">
-                            {selectedReport.score || 0}%
+                            {getReportScore(selectedReport)}%
                           </p>
                         </div>
 
                         <div className="rounded-2xl bg-white/10 p-4">
                           <p className="text-xs text-slate-300">OpenAlex</p>
                           <p className="mt-2 text-3xl font-black">
-                            {selectedReport.summary?.totalOpenAlexWorks || 0}
+                            {getReportMetric(selectedReport, "totalOpenAlexWorks")}
                           </p>
                         </div>
 
                         <div className="rounded-2xl bg-white/10 p-4">
                           <p className="text-xs text-slate-300">ORCID</p>
                           <p className="mt-2 text-3xl font-black">
-                            {selectedReport.summary?.totalOrcidWorks || 0}
+                            {getReportMetric(selectedReport, "totalOrcidWorks")}
                           </p>
                         </div>
 
                         <div className="rounded-2xl bg-white/10 p-4">
                           <p className="text-xs text-slate-300">Crossref</p>
                           <p className="mt-2 text-3xl font-black">
-                            {selectedReport.summary?.totalCrossrefValidations || 0}
+                            {getReportMetric(
+                              selectedReport,
+                              "totalCrossrefValidations"
+                            )}
                           </p>
                         </div>
                       </div>
@@ -418,7 +438,7 @@ export default function Reports() {
                         {(selectedReport.recommendations || []).map(
                           (recommendation, index) => (
                             <div
-                              key={`${recommendation.title}-${index}`}
+                              key={`${getRecommendationTitle(recommendation)}-${index}`}
                               className="rounded-2xl border border-slate-200 bg-white p-4"
                             >
                               <div className="mb-2">
@@ -432,11 +452,11 @@ export default function Reports() {
                               </div>
 
                               <p className="font-black text-slate-950">
-                                {recommendation.title}
+                                {getRecommendationTitle(recommendation)}
                               </p>
 
                               <p className="mt-2 text-sm leading-7 text-slate-600">
-                                {recommendation.description}
+                                {getRecommendationDescription(recommendation)}
                               </p>
                             </div>
                           )
