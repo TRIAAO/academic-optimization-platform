@@ -13,7 +13,12 @@ import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
 import java.util.UUID;
 
 @Service
@@ -120,6 +125,71 @@ public class OpenAlexService {
                 .stream()
                 .map(OpenAlexWorkResponse::fromEntity)
                 .toList();
+    }
+
+    @Transactional
+    public OpenAlexAbstractSyncResponse syncAbstracts(UUID researcherId) {
+        Researcher researcher = findResearcher(researcherId);
+        OpenAlexAuthorResponse verifiedAuthor = findVerifiedAuthor(researcherId);
+        String openAlexAuthorShortId = normalizeOpenAlexAuthorId(verifiedAuthor.openAlexAuthorId());
+
+        List<OpenAlexWork> foundWorks = fetchAndParseWorksByAuthorId(
+                researcher,
+                openAlexAuthorShortId
+        );
+        List<OpenAlexWork> importedWorks = openAlexWorkRepository
+                .findByResearcherIdOrderByPublicationYearDescTitleAsc(researcherId);
+        Map<String, OpenAlexWork> importedByOpenAlexId = new LinkedHashMap<>();
+
+        for (OpenAlexWork work : importedWorks) {
+            if (hasText(work.getOpenAlexId())) {
+                importedByOpenAlexId.put(work.getOpenAlexId(), work);
+            }
+        }
+
+        int matchedImportedWorks = 0;
+        int updatedWorks = 0;
+
+        for (OpenAlexWork foundWork : foundWorks) {
+            OpenAlexWork importedWork = importedByOpenAlexId.get(foundWork.getOpenAlexId());
+            if (importedWork == null) {
+                continue;
+            }
+
+            matchedImportedWorks++;
+            boolean changed = false;
+
+            if (hasText(foundWork.getAbstractText())
+                    && !Objects.equals(importedWork.getAbstractText(), foundWork.getAbstractText())) {
+                importedWork.setAbstractText(foundWork.getAbstractText());
+                changed = true;
+            }
+
+            if (hasText(foundWork.getAbstractLanguage())
+                    && !Objects.equals(importedWork.getAbstractLanguage(), foundWork.getAbstractLanguage())) {
+                importedWork.setAbstractLanguage(foundWork.getAbstractLanguage());
+                changed = true;
+            }
+
+            if (changed) {
+                openAlexWorkRepository.save(importedWork);
+                updatedWorks++;
+            }
+        }
+
+        int worksWithAbstract = Math.toIntExact(importedWorks.stream()
+                .filter(work -> hasText(work.getAbstractText()))
+                .count());
+
+        return new OpenAlexAbstractSyncResponse(
+                researcher.getId(),
+                researcher.getFullName(),
+                foundWorks.size(),
+                matchedImportedWorks,
+                updatedWorks,
+                worksWithAbstract,
+                LocalDateTime.now()
+        );
     }
 
     @Transactional(readOnly = true)
@@ -264,6 +334,8 @@ public class OpenAlexService {
                     .openAccessStatus(text(result, "open_access", "oa_status"))
                     .openAlexUrl(text(result, "id"))
                     .doiUrl(text(result, "doi"))
+                    .abstractText(reconstructAbstract(result.path("abstract_inverted_index")))
+                    .abstractLanguage(normalizeLanguage(text(result, "language")))
                     .rawSource("OPENALEX")
                     .reviewStatus(PublicationReviewStatus.PENDING_REVIEW)
                     .build();
@@ -272,6 +344,42 @@ public class OpenAlexService {
         }
 
         return works;
+    }
+
+    String reconstructAbstract(JsonNode invertedIndex) {
+        if (invertedIndex == null || !invertedIndex.isObject() || invertedIndex.isEmpty()) {
+            return null;
+        }
+
+        Map<Integer, String> wordsByPosition = new TreeMap<>();
+        invertedIndex.fields().forEachRemaining(entry -> {
+            JsonNode positions = entry.getValue();
+            if (!positions.isArray()) {
+                return;
+            }
+
+            for (JsonNode position : positions) {
+                if (position.isIntegralNumber()) {
+                    wordsByPosition.putIfAbsent(position.asInt(), entry.getKey());
+                }
+            }
+        });
+
+        if (wordsByPosition.isEmpty()) {
+            return null;
+        }
+
+        return normalizeNullable(String.join(" ", wordsByPosition.values())
+                .replaceAll("\\s+([,.;:!?])", "$1")
+                .replace("( ", "(")
+                .replace(" )", ")")
+                .replace("[ ", "[")
+                .replace(" ]", "]"));
+    }
+
+    private String normalizeLanguage(String value) {
+        String normalized = normalizeNullable(value);
+        return normalized == null ? null : normalized.toLowerCase(Locale.ROOT);
     }
 
     private OpenAlexAuthorResponse parseAuthor(JsonNode author) {

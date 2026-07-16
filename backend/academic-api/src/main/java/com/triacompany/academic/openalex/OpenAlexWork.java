@@ -59,6 +59,21 @@ public class OpenAlexWork {
     @Column(name = "doi_url", columnDefinition = "TEXT")
     private String doiUrl;
 
+    @Column(name = "abstract_text", columnDefinition = "TEXT")
+    private String abstractText;
+
+    @Column(name = "abstract_language", length = 20)
+    private String abstractLanguage;
+
+    @Column(name = "abstract_pt", columnDefinition = "TEXT")
+    private String abstractPt;
+
+    @Column(name = "abstract_en", columnDefinition = "TEXT")
+    private String abstractEn;
+
+    @Column(name = "abstract_translations_updated_at")
+    private LocalDateTime abstractTranslationsUpdatedAt;
+
     @Column(name = "raw_source", nullable = false, length = 50)
     private String rawSource;
 
