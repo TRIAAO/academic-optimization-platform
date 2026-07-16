@@ -14,6 +14,7 @@ public record AbstractAnalysisResponse(
         int abstractCoveragePercentage,
         int portugueseCoveragePercentage,
         int englishCoveragePercentage,
+        int unclassifiedLanguageAbstracts,
         String evidenceLevel,
         List<AbstractThemeResponse> themes,
         List<AbstractWorkAnalysisResponse> works,

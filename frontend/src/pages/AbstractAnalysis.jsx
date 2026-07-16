@@ -4,6 +4,7 @@ import {
   ArrowRight,
   BookOpenCheck,
   CheckCircle2,
+  CircleHelp,
   ChevronDown,
   ChevronUp,
   ExternalLink,
@@ -324,12 +325,13 @@ export default function AbstractAnalysis() {
             </div>
           </section>
 
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
             <MetricCard icon={FileSearch} label="OpenAlex" value={formatNumber(analysis.totalOpenAlexWorks)} detail="obras importadas" healthy={analysis.totalOpenAlexWorks > 0} />
             <MetricCard icon={BookOpenCheck} label="Confirmadas" value={formatNumber(analysis.confirmedWorks)} detail="autoria validada" healthy={analysis.confirmedWorks > 0} />
             <MetricCard icon={CheckCircle2} label="Abstracts" value={formatNumber(analysis.worksWithAbstract)} detail={`${analysis.abstractCoveragePercentage}% de cobertura`} healthy={analysis.worksWithAbstract > 0} />
             <MetricCard icon={Languages} label="Português" value={`${analysis.portugueseCoveragePercentage}%`} detail="original ou versão PT" healthy={analysis.portugueseCoveragePercentage >= 80} />
             <MetricCard icon={Languages} label="Inglês" value={`${analysis.englishCoveragePercentage}%`} detail="original ou versão EN" healthy={analysis.englishCoveragePercentage >= 80} />
+            <MetricCard icon={CircleHelp} label="Idioma n/d" value={formatNumber(analysis.unclassifiedLanguageAbstracts)} detail="fora da classificação PT–EN" healthy={Number(analysis.unclassifiedLanguageAbstracts || 0) === 0} />
             <MetricCard icon={ShieldCheck} label="Pendentes" value={formatNumber(analysis.missingAbstracts)} detail="sem abstract original" healthy={analysis.missingAbstracts === 0} />
           </section>
 

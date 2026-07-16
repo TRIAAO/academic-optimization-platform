@@ -57,6 +57,10 @@ public class AbstractAnalysisService {
         int worksWithEnglish = Math.toIntExact(workResponses.stream()
                 .filter(AbstractWorkAnalysisResponse::hasEnglishVersion)
                 .count());
+        int unclassifiedLanguageAbstracts = Math.toIntExact(workResponses.stream()
+                .filter(AbstractWorkAnalysisResponse::hasOriginalAbstract)
+                .filter(work -> !isPtEnLanguage(work.originalLanguage()))
+                .count());
         int confirmedTotal = confirmedWorks.size();
         int abstractCoverage = percentage(worksWithAbstract, confirmedTotal);
 
@@ -78,6 +82,7 @@ public class AbstractAnalysisService {
                 abstractCoverage,
                 percentage(worksWithPortuguese, confirmedTotal),
                 percentage(worksWithEnglish, confirmedTotal),
+                unclassifiedLanguageAbstracts,
                 evidenceLevel(confirmedTotal, abstractCoverage),
                 engine.extractThemes(
                         evidence,
@@ -251,6 +256,10 @@ public class AbstractAnalysisService {
 
     private String normalizeLanguage(String value) {
         return hasText(value) ? value.trim().toLowerCase(Locale.ROOT) : null;
+    }
+
+    private boolean isPtEnLanguage(String language) {
+        return "pt".equals(language) || "en".equals(language);
     }
 
     private String normalizeNullable(String value) {
