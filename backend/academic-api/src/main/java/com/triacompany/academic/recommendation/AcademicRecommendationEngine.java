@@ -95,6 +95,10 @@ public class AcademicRecommendationEngine {
         }
 
         List<KeywordCandidate> ranked = candidates.values().stream()
+                .filter(candidate -> !isResearcherNameCandidate(
+                        candidate.normalized,
+                        context.researcherName()
+                ))
                 .filter(candidate -> candidate.profileSeed || candidate.productionEvidence >= 2)
                 .sorted(keywordComparator())
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
@@ -105,6 +109,10 @@ public class AcademicRecommendationEngine {
 
             candidates.values().stream()
                     .filter(candidate -> !selected.contains(candidate.normalized))
+                    .filter(candidate -> !isResearcherNameCandidate(
+                            candidate.normalized,
+                            context.researcherName()
+                    ))
                     .sorted(keywordComparator())
                     .limit(8L - ranked.size())
                     .forEach(ranked::add);
@@ -481,6 +489,29 @@ public class AcademicRecommendationEngine {
 
         List<String> tokens = List.of(normalized.split(" "));
         return tokens.stream().anyMatch(token -> token.length() >= 4 && !STOP_WORDS.contains(token));
+    }
+
+    private boolean isResearcherNameCandidate(String candidate, String researcherName) {
+        if (!hasText(candidate)) {
+            return false;
+        }
+
+        Set<String> nameTokens = researcherNameTokens(researcherName);
+        List<String> candidateTokens = List.of(candidate.split(" "));
+        return !candidateTokens.isEmpty()
+                && !nameTokens.isEmpty()
+                && candidateTokens.stream().allMatch(nameTokens::contains);
+    }
+
+    private Set<String> researcherNameTokens(String researcherName) {
+        String normalizedName = normalizePhrase(researcherName);
+        if (!hasText(normalizedName)) {
+            return Set.of();
+        }
+
+        Set<String> tokens = new HashSet<>(List.of(normalizedName.split(" ")));
+        tokens.removeIf(token -> token.length() < 3);
+        return tokens;
     }
 
     private String displayPhrase(String value) {

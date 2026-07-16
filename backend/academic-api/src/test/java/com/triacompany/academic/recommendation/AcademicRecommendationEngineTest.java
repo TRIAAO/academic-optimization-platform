@@ -117,4 +117,89 @@ class AcademicRecommendationEngineTest {
                 .extracting(AcademicRecommendationActionResponse::area)
                 .contains("PERFIL_ACADEMICO", "ORCID", "OPENALEX", "METRICAS");
     }
+
+    @Test
+    void excludesResearcherNameFromKeywordRecommendations() {
+        RecommendationContext context = new RecommendationContext(
+                UUID.randomUUID(),
+                "Zakeu A. Zengo",
+                null,
+                null,
+                null,
+                40,
+                2,
+                0,
+                0,
+                0,
+                false,
+                false,
+                List.of(
+                        new WorkEvidence(
+                                "ZENGO Zakeu: inteligência artificial aplicada à educação",
+                                null,
+                                0,
+                                false,
+                                false
+                        ),
+                        new WorkEvidence(
+                                "ZENGO Zakeu: inovação tecnológica no ensino superior",
+                                null,
+                                0,
+                                false,
+                                false
+                        )
+                ),
+                List.of(),
+                LocalDateTime.now()
+        );
+
+        AcademicRecommendationResponse response = engine.generate(context);
+
+        assertThat(response.keywords())
+                .extracting(KeywordRecommendationResponse::keyword)
+                .doesNotContain("ZENGO Zakeu", "ZENGO", "Zakeu");
+    }
+
+    @Test
+    void preservesNameTokenWhenItIsPartOfAScientificTerm() {
+        RecommendationContext context = new RecommendationContext(
+                UUID.randomUUID(),
+                "Isaac Newton",
+                null,
+                null,
+                null,
+                40,
+                2,
+                0,
+                0,
+                0,
+                false,
+                false,
+                List.of(
+                        new WorkEvidence(
+                                "Newton method for nonlinear equations",
+                                null,
+                                0,
+                                false,
+                                false
+                        ),
+                        new WorkEvidence(
+                                "Newton method applied to optimization",
+                                null,
+                                0,
+                                false,
+                                false
+                        )
+                ),
+                List.of(),
+                LocalDateTime.now()
+        );
+
+        AcademicRecommendationResponse response = engine.generate(context);
+
+        assertThat(response.keywords())
+                .extracting(KeywordRecommendationResponse::keyword)
+                .contains("Newton method")
+                .doesNotContain("Newton");
+    }
 }
