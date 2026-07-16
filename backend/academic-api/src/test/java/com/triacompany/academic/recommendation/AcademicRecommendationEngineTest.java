@@ -202,4 +202,61 @@ class AcademicRecommendationEngineTest {
                 .contains("Newton method")
                 .doesNotContain("Newton");
     }
+
+    @Test
+    void filtersSingleTermsAndBibliographicMetadataFromProduction() {
+        RecommendationContext context = new RecommendationContext(
+                UUID.randomUUID(),
+                "Pesquisador de teste",
+                null,
+                null,
+                null,
+                40,
+                4,
+                0,
+                0,
+                0,
+                false,
+                false,
+                List.of(
+                        new WorkEvidence("Brasil Editora Luanda Alfalit Brasil primeiro", null, 0, false, false),
+                        new WorkEvidence("Brasil Editora Luanda Alfalit Brasil segundo", null, 0, false, false),
+                        new WorkEvidence("Brasil Editora Luanda Alfalit Brasil terceiro", null, 0, false, false),
+                        new WorkEvidence("Brasil Editora Luanda Alfalit Brasil quarto", null, 0, false, false)
+                ),
+                List.of(),
+                LocalDateTime.now()
+        );
+
+        AcademicRecommendationResponse response = engine.generate(context);
+
+        assertThat(response.keywords()).isEmpty();
+    }
+
+    @Test
+    void preservesSingleAndGeographicTermsDeclaredInProfile() {
+        RecommendationContext context = new RecommendationContext(
+                UUID.randomUUID(),
+                "Pesquisador de teste",
+                null,
+                "Brasil; Luanda",
+                null,
+                60,
+                0,
+                0,
+                0,
+                0,
+                false,
+                false,
+                List.of(),
+                List.of(),
+                LocalDateTime.now()
+        );
+
+        AcademicRecommendationResponse response = engine.generate(context);
+
+        assertThat(response.keywords())
+                .extracting(KeywordRecommendationResponse::keyword)
+                .contains("Brasil", "Luanda");
+    }
 }
