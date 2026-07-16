@@ -157,7 +157,49 @@ class AcademicRecommendationEngineTest {
 
         assertThat(response.keywords())
                 .extracting(KeywordRecommendationResponse::keyword)
-                .allSatisfy(keyword -> assertThat(keyword.toLowerCase())
-                        .doesNotContain("zakeu", "zengo"));
+                .doesNotContain("ZENGO Zakeu", "ZENGO", "Zakeu");
+    }
+
+    @Test
+    void preservesNameTokenWhenItIsPartOfAScientificTerm() {
+        RecommendationContext context = new RecommendationContext(
+                UUID.randomUUID(),
+                "Isaac Newton",
+                null,
+                null,
+                null,
+                40,
+                2,
+                0,
+                0,
+                0,
+                false,
+                false,
+                List.of(
+                        new WorkEvidence(
+                                "Newton method for nonlinear equations",
+                                null,
+                                0,
+                                false,
+                                false
+                        ),
+                        new WorkEvidence(
+                                "Newton method applied to optimization",
+                                null,
+                                0,
+                                false,
+                                false
+                        )
+                ),
+                List.of(),
+                LocalDateTime.now()
+        );
+
+        AcademicRecommendationResponse response = engine.generate(context);
+
+        assertThat(response.keywords())
+                .extracting(KeywordRecommendationResponse::keyword)
+                .contains("Newton method")
+                .doesNotContain("Newton");
     }
 }
