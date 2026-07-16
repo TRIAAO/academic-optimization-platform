@@ -20,27 +20,7 @@ import PrimaryButton from "../components/ui/PrimaryButton";
 import { orcidService } from "../services/orcidService";
 import { researcherService } from "../services/researcherService";
 import { formatDateTime } from "../utils/formatters";
-
-function formatOrcidInput(value) {
-  const withoutUrl = String(value || "").replace(/^https?:\/\/orcid\.org\//i, "");
-  const identifier = withoutUrl.split(/[/?#]/)[0];
-  const compact = identifier.toUpperCase().replace(/[^0-9X]/g, "").slice(0, 16);
-  return compact.match(/.{1,4}/g)?.join("-") || "";
-}
-
-function isValidOrcid(value) {
-  const compact = String(value || "").replace(/-/g, "").toUpperCase();
-  if (!/^\d{15}[0-9X]$/.test(compact)) return false;
-
-  let total = 0;
-  for (let index = 0; index < 15; index += 1) {
-    total = (total + Number(compact[index])) * 2;
-  }
-
-  const result = (12 - (total % 11)) % 11;
-  const expected = result === 10 ? "X" : String(result);
-  return compact[15] === expected;
-}
+import { formatOrcidInput, isValidOrcid } from "../utils/orcid";
 
 function isPublicHttpUrl(value) {
   try {
@@ -457,7 +437,7 @@ export default function Orcid() {
                     }}
                     inputMode="text"
                     autoComplete="off"
-                    maxLength={19}
+                    maxLength={64}
                     className="w-full rounded-2xl border border-slate-200 px-4 py-3 font-mono text-sm tracking-wide outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
                     placeholder="0000-0000-0000-0000"
                   />

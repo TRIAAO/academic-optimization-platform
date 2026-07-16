@@ -12,6 +12,7 @@ public record OrcidProfileSummaryResponse(
         String familyName,
         String creditName,
         String displayName,
+        String primaryEmail,
         String biography,
         List<String> keywords,
         List<OrcidWebsiteResponse> websites,

@@ -28,6 +28,11 @@ class OrcidProfileServiceTest {
                         { "content": "Educação" },
                         { "content": "Tecnologia" }
                       ]
+                    },
+                    "emails": {
+                      "email": [
+                        { "email": "ana.silva@universidade.ao", "primary": true, "verified": true }
+                      ]
                     }
                   },
                   "activities-summary": {
@@ -44,6 +49,7 @@ class OrcidProfileServiceTest {
 
         assertThat(response.orcidId()).isEqualTo("0000-0002-1825-0097");
         assertThat(response.displayName()).isEqualTo("Ana Silva");
+        assertThat(response.primaryEmail()).isEqualTo("ana.silva@universidade.ao");
         assertThat(response.keywords()).containsExactly("Educação", "Tecnologia");
         assertThat(response.worksCount()).isEqualTo(3);
         verify(orcidClient).fetchRecord("0000-0002-1825-0097");
