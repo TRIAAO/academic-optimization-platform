@@ -22,6 +22,7 @@ import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import { APP_CONFIG } from "../config/app";
@@ -397,27 +398,35 @@ export default function AcademicOptimization() {
                 </div>
               </section>
 
-              <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <GraduationCap className="h-6 w-6 text-violet-600" />
-                  <p className="mt-4 text-sm font-semibold text-slate-500">Perfil acadêmico</p>
-                  <p className="mt-2 text-3xl font-black text-slate-950">{formatNumber(report.profileCompletionPercentage)}%</p>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <Link2 className="h-6 w-6 text-emerald-600" />
-                  <p className="mt-4 text-sm font-semibold text-slate-500">Obras ORCID</p>
-                  <p className="mt-2 text-3xl font-black text-slate-950">{formatNumber(report.totalOrcidWorks)}</p>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <Network className="h-6 w-6 text-blue-600" />
-                  <p className="mt-4 text-sm font-semibold text-slate-500">OpenAlex confirmadas</p>
-                  <p className="mt-2 text-3xl font-black text-slate-950">{formatNumber(report.confirmedOpenAlexWorks)} <span className="text-base text-slate-400">/ {formatNumber(report.totalOpenAlexWorks)}</span></p>
-                </div>
-                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <FileCheck2 className="h-6 w-6 text-amber-600" />
-                  <p className="mt-4 text-sm font-semibold text-slate-500">DOIs confirmados</p>
-                  <p className="mt-2 text-3xl font-black text-slate-950">{formatNumber(report.doiConfirmedCount)} <span className="text-base text-slate-400">/ {formatNumber(report.totalCrossrefValidations)}</span></p>
-                </div>
+              <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <MetricCard
+                  icon={GraduationCap}
+                  title="Perfil acadêmico"
+                  value={`${formatNumber(report.profileCompletionPercentage)}%`}
+                  description="preenchimento"
+                  tone="violet"
+                />
+                <MetricCard
+                  icon={Link2}
+                  title="Obras ORCID"
+                  value={formatNumber(report.totalOrcidWorks)}
+                  description="obras identificadas"
+                  tone="emerald"
+                />
+                <MetricCard
+                  icon={Network}
+                  title="OpenAlex confirmadas"
+                  value={`${formatNumber(report.confirmedOpenAlexWorks)} / ${formatNumber(report.totalOpenAlexWorks)}`}
+                  description="autoria validada"
+                  tone="blue"
+                />
+                <MetricCard
+                  icon={FileCheck2}
+                  title="DOIs confirmados"
+                  value={`${formatNumber(report.doiConfirmedCount)} / ${formatNumber(report.totalCrossrefValidations)}`}
+                  description="validações Crossref"
+                  tone="amber"
+                />
               </section>
 
               <section>

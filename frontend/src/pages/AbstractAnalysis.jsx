@@ -23,6 +23,7 @@ import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import { abstractAnalysisService } from "../services/abstractAnalysisService";
@@ -87,21 +88,6 @@ function CoverageScore({ value, level }) {
         <p className="mt-1 text-sm leading-6 text-slate-300">
           Calculada apenas sobre obras confirmadas.
         </p>
-      </div>
-    </div>
-  );
-}
-
-function MetricCard({ label, value, detail, icon: Icon, healthy = true }) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${healthy ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>
-        <Icon className="h-5 w-5" />
-      </div>
-      <div className="min-w-0">
-        <p className="truncate text-[11px] font-bold uppercase tracking-wide text-slate-500">{label}</p>
-        <p className="mt-1 font-black text-slate-950">{value}</p>
-        <p className="truncate text-xs text-slate-500">{detail}</p>
       </div>
     </div>
   );
@@ -326,13 +312,13 @@ export default function AbstractAnalysis() {
           </section>
 
           <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
-            <MetricCard icon={FileSearch} label="OpenAlex" value={formatNumber(analysis.totalOpenAlexWorks)} detail="obras importadas" healthy={analysis.totalOpenAlexWorks > 0} />
-            <MetricCard icon={BookOpenCheck} label="Confirmadas" value={formatNumber(analysis.confirmedWorks)} detail="autoria validada" healthy={analysis.confirmedWorks > 0} />
-            <MetricCard icon={CheckCircle2} label="Abstracts" value={formatNumber(analysis.worksWithAbstract)} detail={`${analysis.abstractCoveragePercentage}% de cobertura`} healthy={analysis.worksWithAbstract > 0} />
-            <MetricCard icon={Languages} label="Português" value={`${analysis.portugueseCoveragePercentage}%`} detail="original ou versão PT" healthy={analysis.portugueseCoveragePercentage >= 80} />
-            <MetricCard icon={Languages} label="Inglês" value={`${analysis.englishCoveragePercentage}%`} detail="original ou versão EN" healthy={analysis.englishCoveragePercentage >= 80} />
-            <MetricCard icon={CircleHelp} label="Idioma n/d" value={formatNumber(analysis.unclassifiedLanguageAbstracts)} detail="fora da classificação PT–EN" healthy={Number(analysis.unclassifiedLanguageAbstracts || 0) === 0} />
-            <MetricCard icon={ShieldCheck} label="Pendentes" value={formatNumber(analysis.missingAbstracts)} detail="sem abstract original" healthy={analysis.missingAbstracts === 0} />
+            <MetricCard icon={FileSearch} title="OpenAlex" value={formatNumber(analysis.totalOpenAlexWorks)} description="obras importadas" healthy={analysis.totalOpenAlexWorks > 0} />
+            <MetricCard icon={BookOpenCheck} title="Confirmadas" value={formatNumber(analysis.confirmedWorks)} description="autoria validada" healthy={analysis.confirmedWorks > 0} />
+            <MetricCard icon={CheckCircle2} title="Abstracts" value={formatNumber(analysis.worksWithAbstract)} description={`${analysis.abstractCoveragePercentage}% de cobertura`} healthy={analysis.worksWithAbstract > 0} />
+            <MetricCard icon={Languages} title="Português" value={`${analysis.portugueseCoveragePercentage}%`} description="original ou versão PT" healthy={analysis.portugueseCoveragePercentage >= 80} />
+            <MetricCard icon={Languages} title="Inglês" value={`${analysis.englishCoveragePercentage}%`} description="original ou versão EN" healthy={analysis.englishCoveragePercentage >= 80} />
+            <MetricCard icon={CircleHelp} title="Idioma n/d" value={formatNumber(analysis.unclassifiedLanguageAbstracts)} description="fora da classificação PT–EN" tone={Number(analysis.unclassifiedLanguageAbstracts || 0) > 0 ? "amber" : "emerald"} />
+            <MetricCard icon={ShieldCheck} title="Pendentes" value={formatNumber(analysis.missingAbstracts)} description="sem abstract original" tone={analysis.missingAbstracts > 0 ? "amber" : "emerald"} />
           </section>
 
           <div className="grid gap-6 xl:grid-cols-[1.08fr_0.92fr]">

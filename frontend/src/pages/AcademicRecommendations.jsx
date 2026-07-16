@@ -20,6 +20,7 @@ import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import { recommendationService } from "../services/recommendationService";
@@ -122,30 +123,6 @@ function EvidenceScore({ score, level }) {
         <p className="mt-2 max-w-sm text-sm leading-6 text-slate-300">
           Quanto mais fontes confirmadas, mais confiável fica a priorização.
         </p>
-      </div>
-    </div>
-  );
-}
-
-function EvidenceItem({ icon: Icon, label, value, detail, healthy = true }) {
-  return (
-    <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div
-        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-          healthy
-            ? "bg-emerald-50 text-emerald-700"
-            : "bg-slate-100 text-slate-500"
-        }`}
-      >
-        <Icon className="h-5 w-5" />
-      </div>
-
-      <div className="min-w-0">
-        <p className="truncate text-xs font-bold uppercase tracking-wide text-slate-500">
-          {label}
-        </p>
-        <p className="mt-1 font-black text-slate-950">{value}</p>
-        {detail && <p className="mt-0.5 truncate text-xs text-slate-500">{detail}</p>}
       </div>
     </div>
   );
@@ -351,45 +328,46 @@ export default function AcademicRecommendations() {
           </section>
 
           <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-            <EvidenceItem
+            <MetricCard
               icon={GraduationCap}
-              label="Perfil"
+              title="Perfil"
               value={`${formatNumber(evidence?.profileCompletionPercentage)}%`}
-              detail="preenchimento"
+              description="preenchimento"
               healthy={Number(evidence?.profileCompletionPercentage) >= 70}
             />
-            <EvidenceItem
+            <MetricCard
               icon={BookOpenCheck}
-              label="ORCID"
+              title="ORCID"
               value={formatNumber(evidence?.orcidWorks)}
-              detail="obras"
+              description="obras"
               healthy={Number(evidence?.orcidWorks) > 0}
             />
-            <EvidenceItem
+            <MetricCard
               icon={Network}
-              label="OpenAlex"
+              title="OpenAlex"
               value={`${formatNumber(evidence?.confirmedOpenAlexWorks)} / ${formatNumber(evidence?.openAlexWorks)}`}
-              detail="confirmadas"
+              description="confirmadas"
               healthy={Number(evidence?.confirmedOpenAlexWorks) > 0}
             />
-            <EvidenceItem
+            <MetricCard
               icon={FileSearch}
-              label="Crossref"
+              title="Crossref"
               value={formatNumber(evidence?.crossrefValidations)}
-              detail="validações"
+              description="validações"
               healthy={Number(evidence?.crossrefValidations) > 0}
             />
-            <EvidenceItem
+            <MetricCard
               icon={CircleGauge}
-              label="Métricas"
+              title="Métricas"
               value={evidence?.scientometricSnapshotAvailable ? "Registradas" : "Pendentes"}
+              valueSize="sm"
               healthy={evidence?.scientometricSnapshotAvailable}
             />
-            <EvidenceItem
+            <MetricCard
               icon={UsersRound}
-              label="Relações"
+              title="Relações"
               value={evidence?.openAlexEnrichmentAvailable ? "Atualizadas" : "Local"}
-              detail={evidence?.openAlexEnrichmentAvailable ? "via OpenAlex" : "sem enriquecimento"}
+              description={evidence?.openAlexEnrichmentAvailable ? "via OpenAlex" : "sem enriquecimento"}
               healthy={evidence?.openAlexEnrichmentAvailable}
             />
           </section>
