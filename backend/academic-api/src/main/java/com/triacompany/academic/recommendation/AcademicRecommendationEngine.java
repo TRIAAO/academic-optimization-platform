@@ -74,7 +74,7 @@ public class AcademicRecommendationEngine {
         splitProfileTerms(context.interests()).forEach(value -> addProfilePhrase(candidates, value));
 
         for (MergedWork work : works) {
-            List<TitleToken> tokens = titleTokens(work.title, context.researcherName());
+            List<TitleToken> tokens = titleTokens(work.title);
             Set<String> seenInWork = new HashSet<>();
 
             for (TitleToken token : tokens) {
@@ -449,9 +449,8 @@ public class AcademicRecommendationEngine {
         return new ArrayList<>(merged.values());
     }
 
-    private List<TitleToken> titleTokens(String title, String researcherName) {
+    private List<TitleToken> titleTokens(String title) {
         List<TitleToken> tokens = new ArrayList<>();
-        Set<String> researcherNameTokens = researcherNameTokens(researcherName);
         Matcher matcher = WORD_PATTERN.matcher(safeText(title, ""));
 
         while (matcher.find()) {
@@ -460,7 +459,6 @@ public class AcademicRecommendationEngine {
 
             if (normalized.length() < 4
                     || normalized.chars().allMatch(Character::isDigit)
-                    || researcherNameTokens.contains(normalized)
                     || STOP_WORDS.contains(normalized)) {
                 continue;
             }
