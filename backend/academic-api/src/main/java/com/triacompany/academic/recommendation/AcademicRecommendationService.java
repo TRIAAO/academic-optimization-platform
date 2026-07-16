@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.triacompany.academic.crossref.CrossrefValidation;
 import com.triacompany.academic.crossref.CrossrefValidationRepository;
 import com.triacompany.academic.openalex.OpenAlexClient;
+import com.triacompany.academic.openalex.OpenAlexAuthorIdentity;
+import com.triacompany.academic.openalex.OpenAlexAuthorIdentityRepository;
 import com.triacompany.academic.openalex.OpenAlexWork;
 import com.triacompany.academic.openalex.OpenAlexWorkRepository;
 import com.triacompany.academic.openalex.PublicationReviewStatus;
@@ -43,6 +45,7 @@ public class AcademicRecommendationService {
     private final CrossrefValidationRepository crossrefValidationRepository;
     private final ScientometricMetricRepository scientometricMetricRepository;
     private final OpenAlexClient openAlexClient;
+    private final OpenAlexAuthorIdentityRepository openAlexAuthorIdentityRepository;
     private final AcademicRecommendationEngine engine = new AcademicRecommendationEngine();
 
     @Transactional(readOnly = true)
@@ -131,14 +134,24 @@ public class AcademicRecommendationService {
     }
 
     private OpenAlexEnrichment loadOpenAlexEnrichment(Researcher researcher) {
-        String orcidId = normalizeOrcidId(researcher.getOrcidId());
-        if (orcidId == null) {
-            return new OpenAlexEnrichment(List.of(), false);
-        }
-
         try {
-            JsonNode author = openAlexClient.fetchAuthorByOrcid(orcidId);
-            String researcherAuthorId = text(author, "id");
+            OpenAlexAuthorIdentity identity = openAlexAuthorIdentityRepository
+                    .findByResearcherId(researcher.getId())
+                    .orElse(null);
+            String researcherAuthorId;
+
+            if (identity != null) {
+                researcherAuthorId = identity.getOpenAlexAuthorId();
+            } else {
+                String orcidId = normalizeOrcidId(researcher.getOrcidId());
+                if (orcidId == null) {
+                    return new OpenAlexEnrichment(List.of(), false);
+                }
+
+                JsonNode author = openAlexClient.fetchAuthorByOrcid(orcidId);
+                researcherAuthorId = text(author, "id");
+            }
+
             String authorShortId = shortOpenAlexId(researcherAuthorId);
 
             if (authorShortId == null) {

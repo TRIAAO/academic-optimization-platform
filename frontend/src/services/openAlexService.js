@@ -21,6 +21,31 @@ function buildReviewPayload(reviewNote) {
 }
 
 export const openAlexService = {
+  async findIdentity(researcherId) {
+    const response = await apiClient.get(
+      `/api/v1/openalex/researchers/${researcherId}/identity`
+    );
+
+    return response.data || null;
+  },
+
+  async confirmIdentity(researcherId, openAlexAuthorId) {
+    const response = await apiClient.put(
+      `/api/v1/openalex/researchers/${researcherId}/identity`,
+      { openAlexAuthorId }
+    );
+
+    return response.data;
+  },
+
+  async syncIdentity(researcherId) {
+    const response = await apiClient.post(
+      `/api/v1/openalex/researchers/${researcherId}/identity/sync`
+    );
+
+    return response.data;
+  },
+
   async findVerifiedAuthor(researcherId) {
     const response = await apiClient.get(
       `/api/v1/openalex/researchers/${researcherId}/author`

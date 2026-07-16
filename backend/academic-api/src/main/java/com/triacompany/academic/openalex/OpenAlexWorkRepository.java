@@ -16,5 +16,7 @@ public interface OpenAlexWorkRepository extends JpaRepository<OpenAlexWork, UUID
 
     boolean existsByResearcherIdAndOpenAlexId(UUID researcherId, String openAlexId);
 
+    boolean existsByResearcherId(UUID researcherId);
+
     long deleteByResearcherId(UUID researcherId);
 }
