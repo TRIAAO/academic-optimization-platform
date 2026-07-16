@@ -122,7 +122,13 @@ public class EditorialRecommendationService {
                 selectedWork == null ? null : selectedWork.getAbstractLanguage(),
                 selectedWork == null ? null : selectedWork.getSourceName(),
                 journals.size(),
-                evidenceLevel(selectedWork, journals),
+                EditorialEvidenceLevel.from(
+                        journals.stream()
+                                .mapToInt(EditorialJournalRecommendationResponse::relevanceScore)
+                                .max()
+                                .orElse(0),
+                        selectedWork != null
+                ),
                 crossrefAvailable,
                 statusMessage,
                 journals,
@@ -215,22 +221,6 @@ public class EditorialRecommendationService {
             ));
         }
         return result;
-    }
-
-    private String evidenceLevel(
-            OpenAlexWork selectedWork,
-            List<EditorialJournalRecommendationResponse> journals
-    ) {
-        if (selectedWork == null) {
-            return "SEM_EVIDENCIA";
-        }
-        if (journals.size() >= 5 && usableAbstract(selectedWork).length() >= 300) {
-            return "FORTE";
-        }
-        if (journals.size() >= 2) {
-            return "MODERADA";
-        }
-        return "INICIAL";
     }
 
     private String firstArrayText(JsonNode node, String field) {
