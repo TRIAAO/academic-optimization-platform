@@ -121,6 +121,40 @@ public class OpenAlexClient {
         }
     }
 
+    public JsonNode fetchWorkById(String openAlexWorkId) {
+        String normalizedWorkId = normalizeOpenAlexWorkId(openAlexWorkId);
+
+        if (normalizedWorkId == null) {
+            throw new IllegalArgumentException("O identificador da obra OpenAlex é obrigatório.");
+        }
+
+        try {
+            URI uri = URI.create(
+                    openAlexBaseUrl
+                            + "/works/"
+                            + encode(normalizedWorkId)
+                            + "?mailto="
+                            + encode(mailto)
+            );
+
+            return restClient()
+                    .get()
+                    .uri(uri)
+                    .retrieve()
+                    .body(JsonNode.class);
+
+        } catch (RestClientResponseException exception) {
+            throw new IllegalArgumentException(
+                    "Obra não encontrada no OpenAlex: "
+                            + exception.getStatusCode()
+                            + " - "
+                            + exception.getResponseBodyAsString()
+            );
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Não foi possível consultar a obra no OpenAlex neste momento.");
+        }
+    }
+
     public JsonNode searchWorksByAuthorName(String authorName) {
         try {
             URI uri = URI.create(
@@ -163,5 +197,18 @@ public class OpenAlexClient {
         }
 
         return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    }
+
+    private String normalizeOpenAlexWorkId(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        String normalized = value
+                .replace("https://openalex.org/", "")
+                .replace("http://openalex.org/", "")
+                .trim();
+
+        return normalized.isBlank() ? null : normalized;
     }
 }
