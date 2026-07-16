@@ -10,6 +10,7 @@ import {
   LibraryBig,
   Link2,
   Network,
+  Sparkles,
   ShieldCheck,
   UserRoundSearch
 } from "lucide-react";
@@ -77,6 +78,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Validação DOI e metadados via Crossref."
+  },
+  {
+    key: "optimization",
+    name: "Otimização Acadêmica",
+    href: "/admin/optimization",
+    icon: Sparkles,
+    enabled: true,
+    technical: false,
+    description: "Score, recomendações, alertas éticos e plano de ação."
   },
   {
     key: "reports",
