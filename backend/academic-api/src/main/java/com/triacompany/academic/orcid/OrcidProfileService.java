@@ -23,7 +23,7 @@ public class OrcidProfileService {
         Researcher researcher = researcherRepository.findById(researcherId)
                 .orElseThrow(() -> new IllegalArgumentException("Pesquisador não encontrado."));
 
-        String orcidId = normalizeOrcidId(researcher.getOrcidId());
+        String orcidId = OrcidId.normalize(researcher.getOrcidId());
 
         if (orcidId == null) {
             throw new IllegalArgumentException("Este pesquisador não possui ORCID informado.");
@@ -34,7 +34,7 @@ public class OrcidProfileService {
 
     @Transactional(readOnly = true)
     public OrcidProfileSummaryResponse findSummaryByOrcidId(String rawOrcidId) {
-        String orcidId = normalizeOrcidId(rawOrcidId);
+        String orcidId = OrcidId.normalize(rawOrcidId);
 
         if (orcidId == null) {
             throw new IllegalArgumentException("ORCID é obrigatório.");
@@ -263,25 +263,6 @@ public class OrcidProfileService {
 
         String value = current.asText(null);
         return normalizeNullable(value);
-    }
-
-    private String normalizeOrcidId(String value) {
-        String normalized = normalizeNullable(value);
-
-        if (normalized == null) {
-            return null;
-        }
-
-        normalized = normalized
-                .replace("https://orcid.org/", "")
-                .replace("http://orcid.org/", "")
-                .trim();
-
-        if (!normalized.matches("\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]")) {
-            throw new IllegalArgumentException("ORCID inválido. Use o formato 0000-0000-0000-0000.");
-        }
-
-        return normalized;
     }
 
     private String normalizeNullable(String value) {

@@ -50,7 +50,9 @@ export const orcidService = {
   },
 
   async findSummaryByOrcidId(orcidId) {
-    const response = await apiClient.get(`/api/v1/orcid/${orcidId}/summary`);
+    const response = await apiClient.get("/api/v1/orcid/lookup", {
+      params: { orcid: orcidId }
+    });
     return response.data;
   }
 };
