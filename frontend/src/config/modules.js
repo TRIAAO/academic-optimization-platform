@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  BookMarked,
   BrainCircuit,
   BookOpenCheck,
   ClipboardCheck,
@@ -107,6 +108,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Cobertura PT–EN e temas recorrentes dos abstracts confirmados."
+  },
+  {
+    key: "editorial-recommendations",
+    name: "Direcionamento Editorial",
+    href: "/admin/editorial-recommendations",
+    icon: BookMarked,
+    enabled: true,
+    technical: false,
+    description: "Matching explicável entre abstracts e periódicos relacionados."
   },
   {
     key: "reports",
