@@ -164,6 +164,10 @@ public class AuditLogFilter extends OncePerRequestFilter {
             return "REPORT_EXPORT_PDF";
         }
 
+        if (path.contains("/editorial-decisions")) {
+            return "EDITORIAL_DECISION_SAVE";
+        }
+
         return switch (method.toUpperCase(Locale.ROOT)) {
             case "POST" -> "CREATE";
             case "PUT" -> "UPDATE";
@@ -178,6 +182,10 @@ public class AuditLogFilter extends OncePerRequestFilter {
 
         if (path.contains("/auth")) {
             return "AUTH";
+        }
+
+        if (path.contains("/editorial-decisions")) {
+            return "EDITORIAL_DECISIONS";
         }
 
         if (path.contains("/researchers")) {
@@ -227,6 +235,7 @@ public class AuditLogFilter extends OncePerRequestFilter {
             case "OPTIMIZATION_REPORTS" -> "OPTIMIZATION_REPORT";
             case "GOOGLE_SCHOLAR_CHECKLISTS" -> "GOOGLE_SCHOLAR_CHECKLIST";
             case "INSTITUTIONAL_DASHBOARD" -> "INSTITUTIONAL_DASHBOARD";
+            case "EDITORIAL_DECISIONS" -> "EDITORIAL_DECISION";
             case "AUTH" -> "AUTH_EVENT";
             default -> null;
         };
