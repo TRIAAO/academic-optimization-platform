@@ -24,7 +24,8 @@ class OpenAlexServiceAbstractTest {
         OpenAlexService service = new OpenAlexService(
                 mock(com.triacompany.academic.researcher.ResearcherRepository.class),
                 mock(OpenAlexClient.class),
-                mock(OpenAlexWorkRepository.class)
+                mock(OpenAlexWorkRepository.class),
+                mock(OpenAlexAuthorIdentityService.class)
         );
         var invertedIndex = new ObjectMapper().readTree("""
                 {
@@ -48,7 +49,8 @@ class OpenAlexServiceAbstractTest {
         OpenAlexService service = new OpenAlexService(
                 researcherRepository,
                 openAlexClient,
-                openAlexWorkRepository
+                openAlexWorkRepository,
+                mock(OpenAlexAuthorIdentityService.class)
         );
         UUID researcherId = UUID.randomUUID();
         Researcher researcher = Researcher.builder()
@@ -102,7 +104,8 @@ class OpenAlexServiceAbstractTest {
         OpenAlexService service = new OpenAlexService(
                 researcherRepository,
                 openAlexClient,
-                openAlexWorkRepository
+                openAlexWorkRepository,
+                mock(OpenAlexAuthorIdentityService.class)
         );
         UUID researcherId = UUID.randomUUID();
         Researcher researcher = Researcher.builder()

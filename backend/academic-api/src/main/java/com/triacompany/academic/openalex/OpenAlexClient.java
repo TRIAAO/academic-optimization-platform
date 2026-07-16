@@ -22,6 +22,36 @@ public class OpenAlexClient {
     @Value("${app.openalex.mailto}")
     private String mailto;
 
+    public JsonNode fetchAuthorById(String openAlexAuthorId) {
+        String normalizedAuthorId = OpenAlexAuthorId.normalize(openAlexAuthorId);
+
+        try {
+            URI uri = URI.create(
+                    openAlexBaseUrl
+                            + "/authors/"
+                            + encode(normalizedAuthorId)
+                            + "?mailto="
+                            + encode(mailto)
+            );
+
+            return restClient()
+                    .get()
+                    .uri(uri)
+                    .retrieve()
+                    .body(JsonNode.class);
+
+        } catch (RestClientResponseException exception) {
+            throw new IllegalArgumentException(
+                    "Autor OpenAlex não encontrado: "
+                            + exception.getStatusCode()
+                            + " - "
+                            + exception.getResponseBodyAsString()
+            );
+        } catch (Exception exception) {
+            throw new IllegalArgumentException("Não foi possível consultar o autor OpenAlex neste momento.");
+        }
+    }
+
     public JsonNode fetchAuthorByOrcid(String orcidId) {
         try {
             String encodedOrcidUrl = URLEncoder.encode(

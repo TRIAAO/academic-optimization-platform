@@ -2,6 +2,7 @@ package com.triacompany.academic.openalex;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,32 @@ import java.util.UUID;
 public class OpenAlexController {
 
     private final OpenAlexService openAlexService;
+    private final OpenAlexAuthorIdentityService openAlexAuthorIdentityService;
+
+    @GetMapping("/researchers/{researcherId}/identity")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public ResponseEntity<OpenAlexAuthorIdentityResponse> findIdentity(
+            @PathVariable UUID researcherId
+    ) {
+        return openAlexAuthorIdentityService.findByResearcher(researcherId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @PutMapping("/researchers/{researcherId}/identity")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OpenAlexAuthorIdentityResponse confirmIdentity(
+            @PathVariable UUID researcherId,
+            @Valid @RequestBody OpenAlexAuthorIdentityRequest request
+    ) {
+        return openAlexAuthorIdentityService.confirm(researcherId, request);
+    }
+
+    @PostMapping("/researchers/{researcherId}/identity/sync")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OpenAlexAuthorIdentityResponse syncIdentity(@PathVariable UUID researcherId) {
+        return openAlexAuthorIdentityService.sync(researcherId);
+    }
 
     @GetMapping("/researchers/{researcherId}/author")
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")

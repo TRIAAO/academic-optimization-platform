@@ -2,8 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   BookOpenCheck,
   Database,
+  ExternalLink,
+  Link2,
   RefreshCw,
   Search,
+  ShieldCheck,
   Trash2,
   UserCheck,
   Users
@@ -16,7 +19,20 @@ import PageHeader from "../components/ui/PageHeader";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import { openAlexService } from "../services/openAlexService";
 import { researcherService } from "../services/researcherService";
-import { formatNumber } from "../utils/formatters";
+import { formatDateTime, formatNumber } from "../utils/formatters";
+
+function shortOpenAlexId(value) {
+  return String(value || "")
+    .replace(/^https?:\/\/openalex\.org\//i, "")
+    .trim()
+    .toUpperCase();
+}
+
+function isSameOpenAlexAuthor(first, second) {
+  const firstId = shortOpenAlexId(first);
+  const secondId = shortOpenAlexId(second);
+  return Boolean(firstId && secondId && firstId === secondId);
+}
 
 function getStatusVariant(status) {
   const normalized = String(status || "").toUpperCase();
@@ -31,6 +47,10 @@ function getStatusVariant(status) {
 function friendlyOpenAlexMessage(apiError) {
   const message = apiError?.message || "";
 
+  if (message.toLowerCase().includes("confirme a identidade")) {
+    return message;
+  }
+
   if (
     message.toLowerCase().includes("autor não encontrado") ||
     message.toLowerCase().includes("openalex")
@@ -44,6 +64,7 @@ function friendlyOpenAlexMessage(apiError) {
 export default function OpenAlex() {
   const [researchers, setResearchers] = useState([]);
   const [selectedResearcherId, setSelectedResearcherId] = useState("");
+  const [identity, setIdentity] = useState(null);
   const [verifiedAuthor, setVerifiedAuthor] = useState(null);
   const [candidates, setCandidates] = useState([]);
   const [works, setWorks] = useState([]);
@@ -118,27 +139,35 @@ export default function OpenAlex() {
 
     try {
       const authorResult = await Promise.allSettled([
+        openAlexService.findIdentity(researcherId),
         openAlexService.findVerifiedAuthor(researcherId),
         openAlexService.findAuthorCandidates(researcherId),
         openAlexService.findWorksByResearcher(researcherId)
       ]);
 
       if (authorResult[0].status === "fulfilled") {
-        setVerifiedAuthor(authorResult[0].value);
+        setIdentity(authorResult[0].value);
       } else {
-        setVerifiedAuthor(null);
-        warnings.push("autor verificado não encontrado pelo ORCID");
+        setIdentity(null);
+        warnings.push("identidade persistida não carregada");
       }
 
       if (authorResult[1].status === "fulfilled") {
-        setCandidates(authorResult[1].value);
+        setVerifiedAuthor(authorResult[1].value);
+      } else {
+        setVerifiedAuthor(null);
+        warnings.push("autor correspondente não encontrado");
+      }
+
+      if (authorResult[2].status === "fulfilled") {
+        setCandidates(authorResult[2].value);
       } else {
         setCandidates([]);
         warnings.push("candidatos não carregados");
       }
 
-      if (authorResult[2].status === "fulfilled") {
-        setWorks(authorResult[2].value);
+      if (authorResult[3].status === "fulfilled") {
+        setWorks(authorResult[3].value);
       } else {
         setWorks([]);
       }
@@ -216,31 +245,49 @@ export default function OpenAlex() {
     }
   }
 
-  async function handleImportByCandidate(candidate) {
-    if (!selectedResearcherId || !candidate?.openAlexAuthorShortId) return;
+  async function handleConfirmIdentity(author) {
+    const authorId = author?.openAlexAuthorId || author?.openAlexAuthorShortId;
+    if (!selectedResearcherId || !authorId) return;
 
     setLoadingAction(true);
     setError("");
     setSuccess("");
 
     try {
-      const data = await openAlexService.importWorksByApprovedAuthor(
+      const data = await openAlexService.confirmIdentity(
         selectedResearcherId,
-        candidate.openAlexAuthorShortId
+        authorId
       );
 
-      setLastImport(data);
-
-      if (Array.isArray(data?.works)) {
-        setWorks(data.works);
-      } else {
-        await loadExistingWorks();
-      }
-
-      setSuccess(`Obras importadas pelo autor ${candidate.displayName}.`);
+      setIdentity(data);
+      setVerifiedAuthor({
+        openAlexAuthorId: data.openAlexAuthorId,
+        orcid: data.orcid,
+        displayName: data.displayName,
+        worksCount: data.worksCount,
+        citedByCount: data.citedByCount
+      });
+      setSuccess(`Identidade OpenAlex confirmada para ${data.displayName || data.openAlexAuthorId}.`);
     } catch (apiError) {
-      await loadExistingWorks();
-      setError(apiError?.message || "Não foi possível importar pelo autor escolhido.");
+      setError(apiError?.message || "Não foi possível confirmar a identidade OpenAlex.");
+    } finally {
+      setLoadingAction(false);
+    }
+  }
+
+  async function handleSyncIdentity() {
+    if (!selectedResearcherId || !identity) return;
+
+    setLoadingAction(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const data = await openAlexService.syncIdentity(selectedResearcherId);
+      setIdentity(data);
+      setSuccess("Identidade OpenAlex sincronizada com os dados públicos mais recentes.");
+    } catch (apiError) {
+      setError(apiError?.message || "Não foi possível sincronizar a identidade OpenAlex.");
     } finally {
       setLoadingAction(false);
     }
@@ -275,7 +322,7 @@ export default function OpenAlex() {
       <PageHeader
         eyebrow="Integração científica"
         title="OpenAlex"
-        description="Busca, validação por ORCID, candidatos de autor e importação de obras acadêmicas vindas do OpenAlex."
+        description="Identidade persistente, validação humana e importação rastreável de obras acadêmicas vindas do OpenAlex."
         actions={
           <PrimaryButton variant="light" icon={RefreshCw} onClick={loadResearchers}>
             Atualizar pesquisadores
@@ -308,6 +355,7 @@ export default function OpenAlex() {
                   value={selectedResearcherId}
                   onChange={(event) => {
                     setSelectedResearcherId(event.target.value);
+                    setIdentity(null);
                     setVerifiedAuthor(null);
                     setCandidates([]);
                     setWorks([]);
@@ -342,7 +390,7 @@ export default function OpenAlex() {
                   variant="light"
                   icon={Search}
                   loading={loadingAction}
-                  disabled={!selectedResearcherId}
+                  disabled={!selectedResearcherId || !identity}
                   onClick={handleSearchWorks}
                 >
                   Buscar obras
@@ -351,7 +399,7 @@ export default function OpenAlex() {
                 <PrimaryButton
                   icon={BookOpenCheck}
                   loading={loadingAction}
-                  disabled={!selectedResearcherId}
+                  disabled={!selectedResearcherId || !identity}
                   onClick={handleImportWorks}
                 >
                   Importar obras
@@ -370,7 +418,7 @@ export default function OpenAlex() {
             </div>
 
             {selectedResearcher && (
-              <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
                     Pesquisador
@@ -397,6 +445,15 @@ export default function OpenAlex() {
                     {formatNumber(works.length)}
                   </p>
                 </div>
+
+                <div className="rounded-2xl bg-slate-50 p-4">
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                    Identidade OpenAlex
+                  </p>
+                  <p className="mt-2 font-black text-slate-950">
+                    {identity?.openAlexAuthorId || "Pendente"}
+                  </p>
+                </div>
               </div>
             )}
           </section>
@@ -410,9 +467,63 @@ export default function OpenAlex() {
           )}
 
           {selectedResearcherId && (
+            <section className={`rounded-3xl border p-5 shadow-sm ${
+              identity
+                ? "border-emerald-200 bg-emerald-50"
+                : "border-amber-200 bg-amber-50"
+            }`}>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className={`rounded-2xl p-3 ${identity ? "bg-emerald-100" : "bg-amber-100"}`}>
+                    {identity
+                      ? <ShieldCheck className="h-5 w-5 text-emerald-700" />
+                      : <Link2 className="h-5 w-5 text-amber-700" />}
+                  </div>
+                  <div>
+                    <p className={`font-black ${identity ? "text-emerald-950" : "text-amber-950"}`}>
+                      {identity ? "Identidade OpenAlex confirmada" : "Confirme a identidade antes de importar"}
+                    </p>
+                    <p className={`mt-1 text-sm ${identity ? "text-emerald-800" : "text-amber-800"}`}>
+                      {identity
+                        ? `${identity.displayName || identity.openAlexAuthorId} · ${identity.verificationSource === "ORCID" ? "correspondência ORCID" : "confirmação manual"}`
+                        : "Escolha o autor correspondente abaixo. Esta confirmação será guardada e reutilizada nas próximas sincronizações."}
+                    </p>
+                    {identity?.lastSyncedAt && (
+                      <p className="mt-2 text-xs font-semibold text-emerald-700">
+                        Sincronizada em {formatDateTime(identity.lastSyncedAt)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {identity && (
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href={identity.openAlexUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm font-bold text-emerald-900"
+                    >
+                      Abrir perfil <ExternalLink className="h-4 w-4" />
+                    </a>
+                    <PrimaryButton
+                      variant="light"
+                      icon={RefreshCw}
+                      loading={loadingAction}
+                      onClick={handleSyncIdentity}
+                    >
+                      Sincronizar identidade
+                    </PrimaryButton>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {selectedResearcherId && (
             <section className="grid gap-6 xl:grid-cols-2">
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="font-black text-slate-950">Autor verificado</h3>
+                <h3 className="font-black text-slate-950">Autor localizado pelo ORCID</h3>
 
                 {!verifiedAuthor ? (
                   <p className="mt-3 text-sm text-slate-500">
@@ -422,12 +533,31 @@ export default function OpenAlex() {
                   </p>
                 ) : (
                   <div className="mt-4 rounded-2xl bg-slate-50 p-4">
-                    <p className="font-black text-slate-950">
-                      {verifiedAuthor.displayName || "Autor OpenAlex"}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      ORCID: {verifiedAuthor.orcid || "Não informado"}
-                    </p>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-black text-slate-950">
+                          {verifiedAuthor.displayName || "Autor OpenAlex"}
+                        </p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          ORCID: {verifiedAuthor.orcid || "Não informado"}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">
+                          OpenAlex: {shortOpenAlexId(verifiedAuthor.openAlexAuthorId)}
+                        </p>
+                      </div>
+                      {isSameOpenAlexAuthor(identity?.openAlexAuthorId, verifiedAuthor.openAlexAuthorId) ? (
+                        <Badge variant="green">Identidade confirmada</Badge>
+                      ) : (
+                        <PrimaryButton
+                          variant="light"
+                          icon={UserCheck}
+                          loading={loadingAction}
+                          onClick={() => handleConfirmIdentity(verifiedAuthor)}
+                        >
+                          Confirmar identidade
+                        </PrimaryButton>
+                      )}
+                    </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Badge variant="blue">
                         {formatNumber(verifiedAuthor.worksCount)} obras
@@ -469,6 +599,10 @@ export default function OpenAlex() {
                               {candidate.lastKnownInstitution ||
                                 "Instituição não informada"}
                             </p>
+                            <p className="mt-1 text-xs font-semibold text-slate-500">
+                              {candidate.openAlexAuthorShortId}
+                              {candidate.orcid ? ` · ORCID ${candidate.orcid.replace(/^https?:\/\/orcid\.org\//i, "")}` : ""}
+                            </p>
                             <div className="mt-3 flex flex-wrap gap-2">
                               <Badge variant="slate">
                                 {candidate.lastKnownCountryCode || "País n/i"}
@@ -479,6 +613,9 @@ export default function OpenAlex() {
                               <Badge variant="green">
                                 {formatNumber(candidate.citedByCount)} citações
                               </Badge>
+                              <Badge variant="amber">
+                                relevância {Math.round(candidate.relevanceScore || 0)}
+                              </Badge>
                             </div>
                           </div>
 
@@ -486,9 +623,16 @@ export default function OpenAlex() {
                             variant="light"
                             icon={UserCheck}
                             loading={loadingAction}
-                            onClick={() => handleImportByCandidate(candidate)}
+                            disabled={isSameOpenAlexAuthor(
+                              identity?.openAlexAuthorId,
+                              candidate.openAlexAuthorId
+                            )}
+                            onClick={() => handleConfirmIdentity(candidate)}
                           >
-                            Usar autor
+                            {isSameOpenAlexAuthor(
+                              identity?.openAlexAuthorId,
+                              candidate.openAlexAuthorId
+                            ) ? "Confirmada" : "Confirmar identidade"}
                           </PrimaryButton>
                         </div>
                       </div>
