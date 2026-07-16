@@ -224,7 +224,7 @@ public class AcademicOptimizationPdfService {
         PdfPTable info = new PdfPTable(2);
         info.setWidthPercentage(100);
         info.setKeepTogether(true);
-        info.setSpacingAfter(10);
+        info.setSpacingAfter(7);
 
         info.addCell(infoCell("Nome", report.researcherName()));
         info.addCell(infoCell("E-mail", report.researcherEmail()));
@@ -245,18 +245,18 @@ public class AcademicOptimizationPdfService {
         PdfPTable summaryTable = new PdfPTable(1);
         summaryTable.setWidthPercentage(100);
         summaryTable.setKeepTogether(true);
-        summaryTable.setSpacingAfter(10);
+        summaryTable.setSpacingAfter(7);
 
         PdfPCell summaryCell = baseCell(BLUE_LIGHT, 1);
         summaryCell.setBorderColor(new Color(191, 219, 254));
-        summaryCell.setPadding(14);
+        summaryCell.setPadding(10);
 
         Paragraph summary = new Paragraph(
                 nullSafe(report.executiveSummary()),
-                font(FontFactory.HELVETICA, 10, new Color(30, 64, 175))
+                font(FontFactory.HELVETICA, 8.5f, new Color(30, 64, 175))
         );
         summary.setAlignment(Element.ALIGN_JUSTIFIED);
-        summary.setLeading(15);
+        summary.setLeading(12);
         summaryCell.addElement(summary);
 
         summaryTable.addCell(summaryCell);
@@ -272,7 +272,7 @@ public class AcademicOptimizationPdfService {
         PdfPTable stats = new PdfPTable(4);
         stats.setWidthPercentage(100);
         stats.setKeepTogether(true);
-        stats.setSpacingAfter(12);
+        stats.setSpacingAfter(8);
 
         stats.addCell(statCell("Perfil acadêmico", report.profileCompletionPercentage() + "%", new Color(124, 58, 237)));
         stats.addCell(statCell("Obras ORCID", String.valueOf(report.totalOrcidWorks()), new Color(5, 150, 105)));
@@ -293,37 +293,37 @@ public class AcademicOptimizationPdfService {
             PdfPTable card = new PdfPTable(1);
             card.setWidthPercentage(100);
             card.setKeepTogether(true);
-            card.setSpacingAfter(8);
+            card.setSpacingAfter(5);
 
             PdfPCell cardCell = baseCell(WHITE, 1);
             cardCell.setBorderColor(BORDER);
-            cardCell.setPadding(12);
+            cardCell.setPadding(8);
 
-            PdfPTable itemHeader = new PdfPTable(new float[]{0.74f, 0.26f});
+            PdfPTable itemHeader = new PdfPTable(new float[]{0.78f, 0.22f});
             itemHeader.setWidthPercentage(100);
 
             PdfPCell titleCell = baseCell(WHITE, 0);
             titleCell.setPadding(0);
             Paragraph itemTitle = new Paragraph(
                     item.label(),
-                    font(FontFactory.HELVETICA_BOLD, 10, SLATE)
+                    font(FontFactory.HELVETICA_BOLD, 8.5f, SLATE)
             );
             titleCell.addElement(itemTitle);
 
             Paragraph itemScore = new Paragraph(
                     item.score() + " / " + item.maxScore(),
-                    font(FontFactory.HELVETICA_BOLD, 9, MUTED)
+                    font(FontFactory.HELVETICA_BOLD, 7.5f, MUTED)
             );
-            itemScore.setSpacingBefore(3);
+            itemScore.setSpacingBefore(1);
             titleCell.addElement(itemScore);
 
             PdfPCell statusCell = baseCell(statusColor(item.status()), 0);
-            statusCell.setPadding(7);
+            statusCell.setPadding(4);
             statusCell.setHorizontalAlignment(Element.ALIGN_CENTER);
             statusCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
             statusCell.addElement(centeredParagraph(
                     statusLabel(item.status()),
-                    font(FontFactory.HELVETICA_BOLD, 8, WHITE)
+                    font(FontFactory.HELVETICA_BOLD, 7, WHITE)
             ));
 
             itemHeader.addCell(titleCell);
@@ -332,11 +332,11 @@ public class AcademicOptimizationPdfService {
 
             Paragraph message = new Paragraph(
                     nullSafe(item.message()),
-                    font(FontFactory.HELVETICA, 9, MUTED)
+                    font(FontFactory.HELVETICA, 7.5f, MUTED)
             );
-            message.setLeading(13);
-            message.setSpacingBefore(8);
-            message.setSpacingAfter(8);
+            message.setLeading(10);
+            message.setSpacingBefore(4);
+            message.setSpacingAfter(4);
             cardCell.addElement(message);
             cardCell.addElement(progressBar(item.score(), item.maxScore(), statusColor(item.status())));
 
@@ -349,48 +349,47 @@ public class AcademicOptimizationPdfService {
             Document document,
             AcademicOptimizationReportResponse report
     ) throws DocumentException {
-        document.newPage();
         addSectionTitle(document, "05", "Plano de ação priorizado");
 
         int index = 1;
 
         for (OptimizationRecommendationResponse recommendation : report.recommendations()) {
-            PdfPTable card = new PdfPTable(new float[]{0.21f, 0.79f});
+            PdfPTable card = new PdfPTable(new float[]{0.15f, 0.85f});
             card.setWidthPercentage(100);
             card.setKeepTogether(true);
-            card.setSpacingAfter(8);
+            card.setSpacingAfter(5);
 
             PdfPCell priorityCell = baseCell(priorityColor(recommendation.priority()), 0);
-            priorityCell.setPadding(10);
+            priorityCell.setPadding(6);
             priorityCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
             priorityCell.addElement(centeredParagraph(
                     String.format("%02d", index),
-                    font(FontFactory.HELVETICA_BOLD, 15, WHITE)
+                    font(FontFactory.HELVETICA_BOLD, 12, WHITE)
             ));
 
             Paragraph priority = centeredParagraph(
                     priorityLabel(recommendation.priority()),
-                    font(FontFactory.HELVETICA_BOLD, 8, WHITE)
+                    font(FontFactory.HELVETICA_BOLD, 7, WHITE)
             );
-            priority.setSpacingBefore(4);
+            priority.setSpacingBefore(1);
             priorityCell.addElement(priority);
 
             PdfPCell actionCell = baseCell(SURFACE, 1);
             actionCell.setBorderColor(BORDER);
-            actionCell.setPadding(12);
+            actionCell.setPadding(8);
 
             Paragraph area = new Paragraph(
                     nullSafe(recommendation.area()),
-                    font(FontFactory.HELVETICA_BOLD, 10, SLATE)
+                    font(FontFactory.HELVETICA_BOLD, 8.5f, SLATE)
             );
-            area.setSpacingAfter(5);
+            area.setSpacingAfter(2);
             actionCell.addElement(area);
 
             Paragraph text = new Paragraph(
                     nullSafe(recommendation.recommendation()),
-                    font(FontFactory.HELVETICA, 9, MUTED)
+                    font(FontFactory.HELVETICA, 7.5f, MUTED)
             );
-            text.setLeading(13);
+            text.setLeading(10);
             actionCell.addElement(text);
 
             card.addCell(priorityCell);
@@ -412,28 +411,28 @@ public class AcademicOptimizationPdfService {
 
         PdfPCell noticeCell = baseCell(new Color(255, 251, 235), 1);
         noticeCell.setBorderColor(new Color(253, 230, 138));
-        noticeCell.setPadding(13);
+        noticeCell.setPadding(9);
 
         Paragraph title = new Paragraph(
                 "Google Acadêmico: procedimento exclusivamente manual",
-                font(FontFactory.HELVETICA_BOLD, 10, new Color(146, 64, 14))
+                font(FontFactory.HELVETICA_BOLD, 8.5f, new Color(146, 64, 14))
         );
-        title.setSpacingAfter(5);
+        title.setSpacingAfter(3);
         noticeCell.addElement(title);
 
         Paragraph text = new Paragraph(
                 "A plataforma não automatiza, não acessa, não altera e não coleta dados diretamente do Google Acadêmico. "
                         + "As recomendações deste relatório apoiam a curadoria institucional e não substituem a validação humana.",
-                font(FontFactory.HELVETICA, 9, new Color(146, 64, 14))
+                font(FontFactory.HELVETICA, 7.5f, new Color(146, 64, 14))
         );
-        text.setLeading(13);
+        text.setLeading(10);
         noticeCell.addElement(text);
 
         Paragraph generatedAt = new Paragraph(
                 "Documento emitido em " + formattedGeneratedAt(report) + ".",
-                font(FontFactory.HELVETICA, 8, new Color(161, 98, 7))
+                font(FontFactory.HELVETICA, 7, new Color(161, 98, 7))
         );
-        generatedAt.setSpacingBefore(7);
+        generatedAt.setSpacingBefore(4);
         noticeCell.addElement(generatedAt);
 
         notice.addCell(noticeCell);
@@ -444,24 +443,24 @@ public class AcademicOptimizationPdfService {
         PdfPTable section = new PdfPTable(new float[]{0.10f, 0.90f});
         section.setWidthPercentage(100);
         section.setKeepTogether(true);
-        section.setSpacingBefore(7);
-        section.setSpacingAfter(8);
+        section.setSpacingBefore(4);
+        section.setSpacingAfter(6);
 
         PdfPCell numberCell = baseCell(BLUE, 0);
-        numberCell.setPadding(7);
+        numberCell.setPadding(5);
         numberCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         numberCell.addElement(centeredParagraph(
                 number,
-                font(FontFactory.HELVETICA_BOLD, 9, WHITE)
+                font(FontFactory.HELVETICA_BOLD, 8, WHITE)
         ));
 
         PdfPCell titleCell = baseCell(WHITE, 0);
-        titleCell.setPadding(7);
-        titleCell.setPaddingLeft(11);
+        titleCell.setPadding(5);
+        titleCell.setPaddingLeft(9);
         titleCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         titleCell.addElement(new Paragraph(
                 title,
-                font(FontFactory.HELVETICA_BOLD, 12, NAVY)
+                font(FontFactory.HELVETICA_BOLD, 10.5f, NAVY)
         ));
 
         section.addCell(numberCell);
@@ -472,31 +471,31 @@ public class AcademicOptimizationPdfService {
     private PdfPCell infoCell(String label, String value) {
         PdfPCell cell = baseCell(SURFACE, 1);
         cell.setBorderColor(WHITE);
-        cell.setBorderWidth(3);
-        cell.setPadding(10);
+        cell.setBorderWidth(2);
+        cell.setPadding(7);
 
         Paragraph labelParagraph = new Paragraph(
                 label.toUpperCase(),
-                font(FontFactory.HELVETICA_BOLD, 7, MUTED)
+                font(FontFactory.HELVETICA_BOLD, 6.5f, MUTED)
         );
-        labelParagraph.setSpacingAfter(4);
+        labelParagraph.setSpacingAfter(2);
         cell.addElement(labelParagraph);
-        cell.addElement(new Paragraph(nullSafe(value), font(FontFactory.HELVETICA_BOLD, 9, SLATE)));
+        cell.addElement(new Paragraph(nullSafe(value), font(FontFactory.HELVETICA_BOLD, 8.5f, SLATE)));
         return cell;
     }
 
     private PdfPCell statCell(String label, String value, Color accent) {
         PdfPCell cell = baseCell(SURFACE, 1);
         cell.setBorderColor(WHITE);
-        cell.setBorderWidth(3);
-        cell.setPadding(10);
+        cell.setBorderWidth(2);
+        cell.setPadding(7);
 
-        Paragraph valueParagraph = new Paragraph(value, font(FontFactory.HELVETICA_BOLD, 17, accent));
-        valueParagraph.setSpacingAfter(5);
+        Paragraph valueParagraph = new Paragraph(value, font(FontFactory.HELVETICA_BOLD, 14, accent));
+        valueParagraph.setSpacingAfter(3);
         cell.addElement(valueParagraph);
 
-        Paragraph labelParagraph = new Paragraph(label, font(FontFactory.HELVETICA_BOLD, 8, MUTED));
-        labelParagraph.setLeading(10);
+        Paragraph labelParagraph = new Paragraph(label, font(FontFactory.HELVETICA_BOLD, 7, MUTED));
+        labelParagraph.setLeading(9);
         cell.addElement(labelParagraph);
         return cell;
     }
@@ -510,11 +509,11 @@ public class AcademicOptimizationPdfService {
         bar.setWidthPercentage(100);
 
         PdfPCell completed = baseCell(color, 0);
-        completed.setFixedHeight(5);
+        completed.setFixedHeight(3);
         bar.addCell(completed);
 
         PdfPCell pending = baseCell(BORDER, 0);
-        pending.setFixedHeight(5);
+        pending.setFixedHeight(3);
         bar.addCell(pending);
         return bar;
     }
