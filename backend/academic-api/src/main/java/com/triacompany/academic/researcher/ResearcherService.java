@@ -1,5 +1,6 @@
 package com.triacompany.academic.researcher;
 
+import com.triacompany.academic.orcid.OrcidId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +29,7 @@ public class ResearcherService {
                 .institution(normalizeNullable(request.institution()))
                 .department(normalizeNullable(request.department()))
                 .academicTitle(normalizeNullable(request.academicTitle()))
-                .orcidId(normalizeNullable(request.orcidId()))
+                .orcidId(OrcidId.normalize(request.orcidId()))
                 .country("Angola")
                 .active(true)
                 .build();
@@ -77,7 +78,7 @@ public class ResearcherService {
         }
 
         if (request.orcidId() != null) {
-            researcher.setOrcidId(normalizeNullable(request.orcidId()));
+            researcher.setOrcidId(OrcidId.normalize(request.orcidId()));
         }
 
         Researcher saved = researcherRepository.save(researcher);

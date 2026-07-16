@@ -54,6 +54,7 @@ public class OrcidProfileService {
         String creditName = text(person, "name", "credit-name", "value");
 
         String displayName = resolveDisplayName(creditName, givenNames, familyName, researcher);
+        String primaryEmail = extractPrimaryEmail(person);
         String biography = text(person, "biography", "content");
 
         List<String> keywords = extractKeywords(person);
@@ -78,6 +79,7 @@ public class OrcidProfileService {
                 familyName,
                 creditName,
                 displayName,
+                primaryEmail,
                 biography,
                 keywords,
                 websites,
@@ -105,6 +107,34 @@ public class OrcidProfileService {
         }
 
         return keywords;
+    }
+
+    private String extractPrimaryEmail(JsonNode person) {
+        JsonNode emailArray = person.path("emails").path("email");
+
+        if (!emailArray.isArray()) {
+            return null;
+        }
+
+        String firstVerifiedPublicEmail = null;
+
+        for (JsonNode email : emailArray) {
+            String value = text(email, "email");
+
+            if (value == null || !email.path("verified").asBoolean(false)) {
+                continue;
+            }
+
+            if (firstVerifiedPublicEmail == null) {
+                firstVerifiedPublicEmail = value;
+            }
+
+            if (email.path("primary").asBoolean(false)) {
+                return value;
+            }
+        }
+
+        return firstVerifiedPublicEmail;
     }
 
     private List<OrcidWebsiteResponse> extractWebsites(JsonNode person) {
