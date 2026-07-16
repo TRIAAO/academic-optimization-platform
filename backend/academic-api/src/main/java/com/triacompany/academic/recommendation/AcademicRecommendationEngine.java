@@ -74,7 +74,7 @@ public class AcademicRecommendationEngine {
         splitProfileTerms(context.interests()).forEach(value -> addProfilePhrase(candidates, value));
 
         for (MergedWork work : works) {
-            List<TitleToken> tokens = titleTokens(work.title);
+            List<TitleToken> tokens = titleTokens(work.title, context.researcherName());
             Set<String> seenInWork = new HashSet<>();
 
             for (TitleToken token : tokens) {
@@ -95,6 +95,10 @@ public class AcademicRecommendationEngine {
         }
 
         List<KeywordCandidate> ranked = candidates.values().stream()
+                .filter(candidate -> !isResearcherNameCandidate(
+                        candidate.normalized,
+                        context.researcherName()
+                ))
                 .filter(candidate -> candidate.profileSeed || candidate.productionEvidence >= 2)
                 .sorted(keywordComparator())
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
@@ -105,6 +109,10 @@ public class AcademicRecommendationEngine {
 
             candidates.values().stream()
                     .filter(candidate -> !selected.contains(candidate.normalized))
+                    .filter(candidate -> !isResearcherNameCandidate(
+                            candidate.normalized,
+                            context.researcherName()
+                    ))
                     .sorted(keywordComparator())
                     .limit(8L - ranked.size())
                     .forEach(ranked::add);
@@ -441,8 +449,9 @@ public class AcademicRecommendationEngine {
         return new ArrayList<>(merged.values());
     }
 
-    private List<TitleToken> titleTokens(String title) {
+    private List<TitleToken> titleTokens(String title, String researcherName) {
         List<TitleToken> tokens = new ArrayList<>();
+        Set<String> researcherNameTokens = researcherNameTokens(researcherName);
         Matcher matcher = WORD_PATTERN.matcher(safeText(title, ""));
 
         while (matcher.find()) {
@@ -451,6 +460,7 @@ public class AcademicRecommendationEngine {
 
             if (normalized.length() < 4
                     || normalized.chars().allMatch(Character::isDigit)
+                    || researcherNameTokens.contains(normalized)
                     || STOP_WORDS.contains(normalized)) {
                 continue;
             }
@@ -481,6 +491,29 @@ public class AcademicRecommendationEngine {
 
         List<String> tokens = List.of(normalized.split(" "));
         return tokens.stream().anyMatch(token -> token.length() >= 4 && !STOP_WORDS.contains(token));
+    }
+
+    private boolean isResearcherNameCandidate(String candidate, String researcherName) {
+        if (!hasText(candidate)) {
+            return false;
+        }
+
+        Set<String> nameTokens = researcherNameTokens(researcherName);
+        List<String> candidateTokens = List.of(candidate.split(" "));
+        return !candidateTokens.isEmpty()
+                && !nameTokens.isEmpty()
+                && candidateTokens.stream().allMatch(nameTokens::contains);
+    }
+
+    private Set<String> researcherNameTokens(String researcherName) {
+        String normalizedName = normalizePhrase(researcherName);
+        if (!hasText(normalizedName)) {
+            return Set.of();
+        }
+
+        Set<String> tokens = new HashSet<>(List.of(normalizedName.split(" ")));
+        tokens.removeIf(token -> token.length() < 3);
+        return tokens;
     }
 
     private String displayPhrase(String value) {
