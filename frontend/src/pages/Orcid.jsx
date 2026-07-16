@@ -1,14 +1,197 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpenCheck, Link2, RefreshCw, Search, UserRoundSearch } from "lucide-react";
+import {
+  BookOpenCheck,
+  BriefcaseBusiness,
+  ExternalLink,
+  Globe2,
+  GraduationCap,
+  Link2,
+  RefreshCw,
+  Search,
+  UserRoundSearch
+} from "lucide-react";
 import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import { orcidService } from "../services/orcidService";
 import { researcherService } from "../services/researcherService";
 import { formatDateTime } from "../utils/formatters";
+
+function formatOrcidInput(value) {
+  const withoutUrl = String(value || "").replace(/^https?:\/\/orcid\.org\//i, "");
+  const identifier = withoutUrl.split(/[/?#]/)[0];
+  const compact = identifier.toUpperCase().replace(/[^0-9X]/g, "").slice(0, 16);
+  return compact.match(/.{1,4}/g)?.join("-") || "";
+}
+
+function isValidOrcid(value) {
+  const compact = String(value || "").replace(/-/g, "").toUpperCase();
+  if (!/^\d{15}[0-9X]$/.test(compact)) return false;
+
+  let total = 0;
+  for (let index = 0; index < 15; index += 1) {
+    total = (total + Number(compact[index])) * 2;
+  }
+
+  const result = (12 - (total % 11)) % 11;
+  const expected = result === 10 ? "X" : String(result);
+  return compact[15] === expected;
+}
+
+function isPublicHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
+function AffiliationList({ title, items, emptyMessage }) {
+  return (
+    <div>
+      <h4 className="font-black text-slate-950">{title}</h4>
+      {items?.length ? (
+        <div className="mt-3 space-y-3">
+          {items.map((item, index) => (
+            <article
+              key={`${item.organizationName || title}-${item.startDate || index}`}
+              className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+            >
+              <p className="font-bold text-slate-950">
+                {item.organizationName || "Organização não informada"}
+              </p>
+              {(item.roleTitle || item.departmentName) && (
+                <p className="mt-1 text-sm text-slate-600">
+                  {[item.roleTitle, item.departmentName].filter(Boolean).join(" · ")}
+                </p>
+              )}
+              <p className="mt-2 text-xs font-semibold text-slate-500">
+                {[item.startDate, item.endDate].filter(Boolean).join(" — ") || "Período não informado"}
+                {item.country ? ` · ${item.country}` : ""}
+              </p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-slate-500">{emptyMessage}</p>
+      )}
+    </div>
+  );
+}
+
+function OrcidSummaryCard({ summary }) {
+  const displayName = summary.displayName || summary.researcherName || "Nome não publicado";
+  const publicWebsites = (summary.websites || []).filter((website) => isPublicHttpUrl(website.url));
+
+  return (
+    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="green">Autor encontrado</Badge>
+            <Badge variant="slate">{summary.orcidId}</Badge>
+          </div>
+          <h3 className="mt-3 text-2xl font-black text-slate-950">{displayName}</h3>
+          <p className="mt-1 text-sm text-slate-500">
+            Dados públicos recuperados diretamente do registo ORCID.
+          </p>
+        </div>
+
+        {summary.orcidUrl && (
+          <a
+            href={summary.orcidUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold text-slate-700 hover:border-blue-300 hover:text-blue-700"
+          >
+            Abrir ORCID <ExternalLink className="h-4 w-4" />
+          </a>
+        )}
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <MetricCard
+          icon={BookOpenCheck}
+          title="Obras públicas"
+          value={summary.worksCount || 0}
+          description="registadas no ORCID"
+          tone="blue"
+        />
+        <MetricCard
+          icon={BriefcaseBusiness}
+          title="Vínculos"
+          value={summary.employments?.length || 0}
+          description="empregos públicos"
+          tone="emerald"
+        />
+        <MetricCard
+          icon={GraduationCap}
+          title="Formação"
+          value={summary.educations?.length || 0}
+          description="registos públicos"
+          tone="violet"
+        />
+      </div>
+
+      {summary.biography && (
+        <div className="mt-6 border-t border-slate-200 pt-5">
+          <h4 className="font-black text-slate-950">Biografia</h4>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-slate-600">
+            {summary.biography}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-6 grid gap-6 border-t border-slate-200 pt-5 lg:grid-cols-2">
+        <AffiliationList
+          title="Vínculos profissionais"
+          items={summary.employments}
+          emptyMessage="Nenhum vínculo profissional público informado."
+        />
+        <AffiliationList
+          title="Formação acadêmica"
+          items={summary.educations}
+          emptyMessage="Nenhuma formação pública informada."
+        />
+      </div>
+
+      {(summary.keywords?.length > 0 || publicWebsites.length > 0) && (
+        <div className="mt-6 grid gap-6 border-t border-slate-200 pt-5 lg:grid-cols-2">
+          <div>
+            <h4 className="font-black text-slate-950">Palavras-chave</h4>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {summary.keywords?.length ? summary.keywords.map((keyword) => (
+                <Badge key={keyword} variant="blue">{keyword}</Badge>
+              )) : <p className="text-sm text-slate-500">Nenhuma palavra-chave pública.</p>}
+            </div>
+          </div>
+          <div>
+            <h4 className="font-black text-slate-950">Sites públicos</h4>
+            <div className="mt-3 space-y-2">
+              {publicWebsites.length ? publicWebsites.map((website, index) => (
+                <a
+                  key={`${website.url}-${index}`}
+                  href={website.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-blue-900"
+                >
+                  <Globe2 className="h-4 w-4" />
+                  {website.name || website.url}
+                </a>
+              )) : <p className="text-sm text-slate-500">Nenhum site público.</p>}
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
 
 export default function Orcid() {
   const [researchers, setResearchers] = useState([]);
@@ -43,6 +226,11 @@ export default function Orcid() {
   const selectedResearcher = useMemo(() => {
     return researchers.find((researcher) => researcher.id === selectedResearcherId);
   }, [researchers, selectedResearcherId]);
+
+  const validManualOrcid = useMemo(
+    () => isValidOrcid(manualOrcidId),
+    [manualOrcidId]
+  );
 
   async function loadResearcherOrcidData() {
     if (!selectedResearcherId) return;
@@ -110,7 +298,10 @@ export default function Orcid() {
   }
 
   async function handleSearchManualOrcid() {
-    if (!manualOrcidId.trim()) return;
+    if (!validManualOrcid) {
+      setError("Informe um ORCID válido com os 16 caracteres.");
+      return;
+    }
 
     setLoadingAction(true);
     setError("");
@@ -122,7 +313,8 @@ export default function Orcid() {
       );
 
       setSummary(summaryData);
-      setSuccess("Resumo ORCID carregado pelo identificador informado.");
+      setManualOrcidId(summaryData.orcidId || manualOrcidId);
+      setSuccess(`Autor encontrado no ORCID: ${summaryData.displayName || summaryData.orcidId}.`);
     } catch (apiError) {
       setError(apiError?.message || "Não foi possível consultar o ORCID informado.");
     } finally {
@@ -239,31 +431,52 @@ export default function Orcid() {
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="font-black text-slate-950">
-                Consultar ORCID manualmente
-              </h3>
+              <h3 className="font-black text-slate-950">Buscar autor pelo ORCID</h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Consulte um resumo público ORCID pelo identificador, sem alterar
-                dados do pesquisador.
+                Digite somente os 16 caracteres. Os hífens são adicionados automaticamente e a consulta não altera nenhum cadastro.
               </p>
 
-              <div className="mt-5 flex gap-3">
-                <input
-                  value={manualOrcidId}
-                  onChange={(event) => setManualOrcidId(event.target.value)}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
-                  placeholder="0000-0000-0000-0000"
-                />
+              <form
+                className="mt-5"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  handleSearchManualOrcid();
+                }}
+              >
+                <label htmlFor="manual-orcid" className="text-xs font-black uppercase tracking-wide text-slate-600">
+                  Número ORCID
+                </label>
+                <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                  <input
+                    id="manual-orcid"
+                    value={manualOrcidId}
+                    onChange={(event) => {
+                      setManualOrcidId(formatOrcidInput(event.target.value));
+                      setError("");
+                    }}
+                    inputMode="text"
+                    autoComplete="off"
+                    maxLength={19}
+                    className="w-full rounded-2xl border border-slate-200 px-4 py-3 font-mono text-sm tracking-wide outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+                    placeholder="0000-0000-0000-0000"
+                  />
 
-                <PrimaryButton
-                  icon={Search}
-                  loading={loadingAction}
-                  onClick={handleSearchManualOrcid}
-                >
-                  Consultar
-                </PrimaryButton>
-              </div>
+                  <PrimaryButton
+                    icon={Search}
+                    loading={loadingAction}
+                    disabled={!validManualOrcid}
+                    type="submit"
+                  >
+                    Buscar autor
+                  </PrimaryButton>
+                </div>
+                <p className={`mt-2 text-xs ${manualOrcidId && !validManualOrcid ? "text-amber-700" : "text-slate-500"}`}>
+                  {manualOrcidId && !validManualOrcid
+                    ? "Continue digitando ou confira o dígito verificador."
+                    : "Também é possível colar o link completo do perfil ORCID."}
+                </p>
+              </form>
             </div>
           </div>
 
@@ -276,15 +489,7 @@ export default function Orcid() {
               />
             )}
 
-            {summary && (
-              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="font-black text-slate-950">Resumo ORCID</h3>
-
-                <pre className="mt-4 max-h-[420px] overflow-auto whitespace-pre-wrap rounded-2xl bg-slate-950 p-4 text-xs leading-6 text-slate-100">
-                  {JSON.stringify(summary, null, 2)}
-                </pre>
-              </div>
-            )}
+            {summary && <OrcidSummaryCard summary={summary} />}
 
             {selectedResearcherId && (
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

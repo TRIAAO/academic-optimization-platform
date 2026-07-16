@@ -49,6 +49,12 @@ public class OrcidController {
         return orcidProfileSyncService.syncProfile(researcherId);
     }
 
+    @GetMapping("/lookup")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public OrcidProfileSummaryResponse lookupByOrcidId(@RequestParam("orcid") String orcid) {
+        return orcidProfileService.findSummaryByOrcidId(orcid);
+    }
+
     @GetMapping("/{orcidId}/summary")
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public OrcidProfileSummaryResponse findSummaryByOrcidId(@PathVariable String orcidId) {
