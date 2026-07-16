@@ -10,6 +10,7 @@ import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import { APP_CONFIG } from "../config/app";
@@ -215,51 +216,43 @@ export default function GoogleScholarChecklist() {
 
           {selectedResearcherId && !loadingChecklist && checklistResult && (
             <>
-              <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-                <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-wide text-slate-500">
-                    Itens
-                  </p>
-                  <p className="mt-2 text-3xl font-black text-slate-950">
-                    {formatNumber(summary.totalItems)}
-                  </p>
-                </div>
-
-                <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-wide text-emerald-700">
-                    OK
-                  </p>
-                  <p className="mt-2 text-3xl font-black text-emerald-700">
-                    {formatNumber(summary.totalOk)}
-                  </p>
-                </div>
-
-                <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-wide text-amber-700">
-                    Pendentes
-                  </p>
-                  <p className="mt-2 text-3xl font-black text-amber-700">
-                    {formatNumber(summary.totalPending)}
-                  </p>
-                </div>
-
-                <div className="rounded-3xl border border-red-200 bg-red-50 p-5 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-wide text-red-700">
-                    Ações
-                  </p>
-                  <p className="mt-2 text-3xl font-black text-red-700">
-                    {formatNumber(summary.totalActionRequired)}
-                  </p>
-                </div>
-
-                <div className="rounded-3xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
-                  <p className="text-xs font-black uppercase tracking-wide text-blue-700">
-                    Gerado em
-                  </p>
-                  <p className="mt-2 text-sm font-black text-blue-700">
-                    {formatDateTime(checklistResult.generatedAt)}
-                  </p>
-                </div>
+              <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+                <MetricCard
+                  icon={ClipboardCheck}
+                  title="Itens"
+                  value={formatNumber(summary.totalItems)}
+                  description="verificações"
+                  tone="slate"
+                />
+                <MetricCard
+                  icon={CheckCircle2}
+                  title="OK"
+                  value={formatNumber(summary.totalOk)}
+                  description="concluídos"
+                  tone="emerald"
+                />
+                <MetricCard
+                  icon={ClipboardCheck}
+                  title="Pendentes"
+                  value={formatNumber(summary.totalPending)}
+                  description="aguardando revisão"
+                  tone="amber"
+                />
+                <MetricCard
+                  icon={AlertTriangle}
+                  title="Ações"
+                  value={formatNumber(summary.totalActionRequired)}
+                  description="ação necessária"
+                  tone="red"
+                />
+                <MetricCard
+                  icon={RefreshCw}
+                  title="Gerado em"
+                  value={formatDateTime(checklistResult.generatedAt)}
+                  description="última atualização"
+                  tone="blue"
+                  valueSize="sm"
+                />
               </section>
 
               <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">

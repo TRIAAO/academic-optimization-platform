@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import MetricCard from "../components/ui/MetricCard";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import { APP_CONFIG } from "../config/app";
 import { dashboardService } from "../services/dashboardService";
@@ -29,40 +30,6 @@ import { formatDateTime, formatNumber } from "../utils/formatters";
 function percentage(value, total) {
   if (!total || total <= 0) return 0;
   return Math.round((Number(value || 0) / Number(total)) * 100);
-}
-
-function MetricCard({ title, value, description, icon: Icon, tone = "blue" }) {
-  const tones = {
-    blue: "bg-blue-50 text-blue-700 ring-blue-100",
-    emerald: "bg-emerald-50 text-emerald-700 ring-emerald-100",
-    amber: "bg-amber-50 text-amber-700 ring-amber-100",
-    violet: "bg-violet-50 text-violet-700 ring-violet-100",
-    rose: "bg-rose-50 text-rose-700 ring-rose-100",
-    slate: "bg-slate-50 text-slate-700 ring-slate-100"
-  };
-
-  return (
-    <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-sm font-semibold text-slate-500">{title}</p>
-          <p className="mt-3 text-4xl font-black tracking-tight text-slate-950">
-            {value}
-          </p>
-        </div>
-
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ring-1 ${
-            tones[tone] || tones.blue
-          }`}
-        >
-          <Icon className="h-6 w-6" />
-        </div>
-      </div>
-
-      <p className="mt-4 text-sm leading-6 text-slate-500">{description}</p>
-    </div>
-  );
 }
 
 function ProgressCard({ title, value, description, tone = "blue" }) {
@@ -214,7 +181,7 @@ export default function Dashboard() {
         <ErrorState title="Erro no dashboard institucional" message={error} />
       )}
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
           title="Pesquisadores"
           value={formatNumber(dashboard?.totalResearchers)}

@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Activity, Database, RefreshCw, ShieldCheck, Wifi } from "lucide-react";
 import ErrorState from "../components/ui/ErrorState";
 import LoadingState from "../components/ui/LoadingState";
+import MetricCard from "../components/ui/MetricCard";
 import PageHeader from "../components/ui/PageHeader";
 import PrimaryButton from "../components/ui/PrimaryButton";
-import StatCard from "../components/ui/StatCard";
 import { APP_CONFIG } from "../config/app";
 import { dashboardService } from "../services/dashboardService";
 import { formatDateTime, formatStatus } from "../utils/formatters";
@@ -61,33 +61,37 @@ export default function OperationalStatus() {
 
       {!loading && !error && (
         <>
-          <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
               title="API"
               value={formatStatus(status?.status)}
               description={status?.api || "Academic Optimization Platform"}
               icon={Wifi}
+              tone="emerald"
             />
 
-            <StatCard
+            <MetricCard
               title="Banco de dados"
               value={status?.database || "Não informado"}
               description="Status reportado pelo backend."
               icon={Database}
+              tone="blue"
             />
 
-            <StatCard
+            <MetricCard
               title="Segurança"
               value={status?.security || "JWT ativo"}
               description="Autenticação e rotas protegidas."
               icon={ShieldCheck}
+              tone="violet"
             />
 
-            <StatCard
+            <MetricCard
               title="OpenAPI"
               value={`${openApi?.totalPaths || 0} paths`}
               description="Contrato JSON publicado em produção."
               icon={Activity}
+              tone="amber"
             />
           </section>
 
