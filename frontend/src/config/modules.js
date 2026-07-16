@@ -1,6 +1,7 @@
 import {
   Activity,
   BarChart3,
+  BrainCircuit,
   BookOpenCheck,
   ClipboardCheck,
   FileText,
@@ -87,6 +88,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Score, recomendações, alertas éticos e plano de ação."
+  },
+  {
+    key: "academic-recommendations",
+    name: "Recomendações Inteligentes",
+    href: "/admin/recommendations",
+    icon: BrainCircuit,
+    enabled: true,
+    technical: false,
+    description: "Temas, colaboradores e veículos científicos baseados em evidências."
   },
   {
     key: "reports",

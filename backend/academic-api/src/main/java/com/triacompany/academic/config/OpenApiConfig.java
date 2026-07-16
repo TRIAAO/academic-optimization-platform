@@ -28,13 +28,14 @@ public class OpenApiConfig {
 
                                 Esta API permite cadastro de pesquisadores, perfis acadêmicos, autenticação JWT,
                                 importação ORCID, curadoria OpenAlex, validação Crossref, relatórios PDF,
+                                métricas cientométricas, recomendações acadêmicas baseadas em evidências,
                                 checklist Google Acadêmico e dashboard institucional.
 
                                 Observação importante:
                                 a plataforma não automatiza, não acessa e não altera dados diretamente no Google Acadêmico.
                                 O módulo Google Acadêmico fornece apenas checklist e orientações manuais.
                                 """)
-                        .version("1.0.0")
+                        .version("1.1.0")
                         .contact(new Contact()
                                 .name("TRIA Company")
                                 .email("geral@triacompany.com")

@@ -5,6 +5,7 @@ import {
   ArrowRight,
   BarChart3,
   BookOpenCheck,
+  BrainCircuit,
   CheckCircle2,
   ClipboardCheck,
   FileText,
@@ -442,6 +443,13 @@ export default function Dashboard() {
             description="Analisar score, recomendações, integridade e plano de ação por pesquisador."
             href="/admin/optimization"
             icon={Sparkles}
+          />
+
+          <ActionCard
+            title="Recomendações Inteligentes"
+            description="Priorizar temas, colaboradores e veículos científicos com evidências rastreáveis."
+            href="/admin/recommendations"
+            icon={BrainCircuit}
           />
 
           <ActionCard

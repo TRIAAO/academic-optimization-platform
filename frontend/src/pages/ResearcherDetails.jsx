@@ -3,6 +3,7 @@ import {
   ArrowLeft,
   BarChart3,
   BookOpenCheck,
+  BrainCircuit,
   FileText,
   Link2,
   RefreshCw
@@ -176,6 +177,12 @@ export default function ResearcherDetails() {
             <Link to={`/admin/scientometric-metrics?researcherId=${id}`}>
               <PrimaryButton variant="light" icon={BarChart3}>
                 Métricas
+              </PrimaryButton>
+            </Link>
+
+            <Link to={`/admin/recommendations?researcherId=${id}`}>
+              <PrimaryButton variant="light" icon={BrainCircuit}>
+                Recomendações
               </PrimaryButton>
             </Link>
 
