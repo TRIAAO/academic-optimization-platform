@@ -261,6 +261,7 @@ export default function AbstractAnalysis() {
   }
 
   const level = EVIDENCE_LEVELS[analysis?.evidenceLevel] || EVIDENCE_LEVELS["SEM_EVIDÊNCIA"];
+  const hasImportedWorks = Number(analysis?.totalOpenAlexWorks || 0) > 0;
 
   return (
     <div className="space-y-6">
@@ -270,7 +271,13 @@ export default function AbstractAnalysis() {
         description="Identifique temas recorrentes e acompanhe traduções manuais, preservando o abstract original e a revisão humana."
         actions={
           <div className="flex flex-wrap gap-3">
-            <PrimaryButton variant="light" icon={UploadCloud} loading={syncing} onClick={handleSyncAbstracts}>
+            <PrimaryButton
+              variant="light"
+              icon={UploadCloud}
+              loading={syncing}
+              disabled={!hasImportedWorks}
+              onClick={handleSyncAbstracts}
+            >
               Sincronizar OpenAlex
             </PrimaryButton>
             <PrimaryButton variant="light" icon={RefreshCw} loading={loadingAnalysis} onClick={() => loadAnalysis()}>
@@ -447,9 +454,23 @@ export default function AbstractAnalysis() {
             ) : (
               <div className="mt-5 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-7 text-center">
                 <BookOpenCheck className="mx-auto h-7 w-7 text-slate-400" />
-                <p className="mt-3 font-black text-slate-800">Nenhuma obra confirmada</p>
-                <p className="mt-1 text-sm text-slate-500">Conclua a revisão manual antes de analisar abstracts.</p>
-                <Link to={`/admin/manual-review?researcherId=${selectedResearcherId}`} className="mt-4 inline-flex items-center gap-2 text-sm font-black text-blue-700">Ir para revisão manual <ArrowRight className="h-4 w-4" /></Link>
+                <p className="mt-3 font-black text-slate-800">
+                  {hasImportedWorks ? "Nenhuma obra confirmada" : "Nenhuma obra OpenAlex importada"}
+                </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  {hasImportedWorks
+                    ? "Conclua a revisão manual antes de analisar abstracts."
+                    : "Importe as obras do pesquisador no módulo OpenAlex para iniciar a análise."}
+                </p>
+                <Link
+                  to={hasImportedWorks
+                    ? `/admin/manual-review?researcherId=${selectedResearcherId}`
+                    : `/admin/openalex?researcherId=${selectedResearcherId}`}
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-black text-blue-700"
+                >
+                  {hasImportedWorks ? "Ir para revisão manual" : "Ir para OpenAlex"}
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
               </div>
             )}
           </section>

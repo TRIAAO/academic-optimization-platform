@@ -86,7 +86,13 @@ public class AbstractAnalysisService {
                         researcher.getFullName()
                 ),
                 workResponses,
-                nextActions(confirmedTotal, worksWithAbstract, worksWithPortuguese, worksWithEnglish),
+                nextActions(
+                        allWorks.size(),
+                        confirmedTotal,
+                        worksWithAbstract,
+                        worksWithPortuguese,
+                        worksWithEnglish
+                ),
                 METHODOLOGY,
                 TRANSLATION_POLICY,
                 LocalDateTime.now()
@@ -149,12 +155,23 @@ public class AbstractAnalysisService {
     }
 
     private List<AbstractAnalysisActionResponse> nextActions(
+            int totalOpenAlexWorks,
             int confirmedWorks,
             int worksWithAbstract,
             int worksWithPortuguese,
             int worksWithEnglish
     ) {
         List<AbstractAnalysisActionResponse> actions = new ArrayList<>();
+
+        if (totalOpenAlexWorks == 0) {
+            actions.add(new AbstractAnalysisActionResponse(
+                    1,
+                    "Importar obras do OpenAlex",
+                    "Busque o autor, aprove o candidato correto e importe as obras antes de sincronizar abstracts.",
+                    "OPENALEX"
+            ));
+            return actions;
+        }
 
         if (confirmedWorks == 0) {
             actions.add(new AbstractAnalysisActionResponse(

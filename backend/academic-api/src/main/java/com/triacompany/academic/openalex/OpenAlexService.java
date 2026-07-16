@@ -13,7 +13,6 @@ import java.text.Normalizer;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -130,51 +129,51 @@ public class OpenAlexService {
     @Transactional
     public OpenAlexAbstractSyncResponse syncAbstracts(UUID researcherId) {
         Researcher researcher = findResearcher(researcherId);
-        OpenAlexAuthorResponse verifiedAuthor = findVerifiedAuthor(researcherId);
-        String openAlexAuthorShortId = normalizeOpenAlexAuthorId(verifiedAuthor.openAlexAuthorId());
-
-        List<OpenAlexWork> foundWorks = fetchAndParseWorksByAuthorId(
-                researcher,
-                openAlexAuthorShortId
-        );
         List<OpenAlexWork> importedWorks = openAlexWorkRepository
                 .findByResearcherIdOrderByPublicationYearDescTitleAsc(researcherId);
-        Map<String, OpenAlexWork> importedByOpenAlexId = new LinkedHashMap<>();
-
-        for (OpenAlexWork work : importedWorks) {
-            if (hasText(work.getOpenAlexId())) {
-                importedByOpenAlexId.put(work.getOpenAlexId(), work);
-            }
-        }
-
+        int foundWorks = 0;
         int matchedImportedWorks = 0;
         int updatedWorks = 0;
+        IllegalArgumentException lastSyncError = null;
 
-        for (OpenAlexWork foundWork : foundWorks) {
-            OpenAlexWork importedWork = importedByOpenAlexId.get(foundWork.getOpenAlexId());
-            if (importedWork == null) {
+        for (OpenAlexWork importedWork : importedWorks) {
+            if (!hasText(importedWork.getOpenAlexId())) {
                 continue;
             }
 
-            matchedImportedWorks++;
-            boolean changed = false;
+            try {
+                JsonNode foundWork = openAlexClient.fetchWorkById(importedWork.getOpenAlexId());
+                foundWorks++;
+                matchedImportedWorks++;
+                boolean changed = false;
+                String abstractText = reconstructAbstract(foundWork.path("abstract_inverted_index"));
+                String abstractLanguage = normalizeLanguage(text(foundWork, "language"));
 
-            if (hasText(foundWork.getAbstractText())
-                    && !Objects.equals(importedWork.getAbstractText(), foundWork.getAbstractText())) {
-                importedWork.setAbstractText(foundWork.getAbstractText());
-                changed = true;
-            }
+                if (hasText(abstractText)
+                        && !Objects.equals(importedWork.getAbstractText(), abstractText)) {
+                    importedWork.setAbstractText(abstractText);
+                    changed = true;
+                }
 
-            if (hasText(foundWork.getAbstractLanguage())
-                    && !Objects.equals(importedWork.getAbstractLanguage(), foundWork.getAbstractLanguage())) {
-                importedWork.setAbstractLanguage(foundWork.getAbstractLanguage());
-                changed = true;
-            }
+                if (hasText(abstractLanguage)
+                        && !Objects.equals(importedWork.getAbstractLanguage(), abstractLanguage)) {
+                    importedWork.setAbstractLanguage(abstractLanguage);
+                    changed = true;
+                }
 
-            if (changed) {
-                openAlexWorkRepository.save(importedWork);
-                updatedWorks++;
+                if (changed) {
+                    openAlexWorkRepository.save(importedWork);
+                    updatedWorks++;
+                }
+            } catch (IllegalArgumentException exception) {
+                lastSyncError = exception;
             }
+        }
+
+        if (!importedWorks.isEmpty() && foundWorks == 0 && lastSyncError != null) {
+            throw new IllegalArgumentException(
+                    "Não foi possível sincronizar nenhuma das obras importadas no OpenAlex neste momento."
+            );
         }
 
         int worksWithAbstract = Math.toIntExact(importedWorks.stream()
@@ -184,7 +183,7 @@ public class OpenAlexService {
         return new OpenAlexAbstractSyncResponse(
                 researcher.getId(),
                 researcher.getFullName(),
-                foundWorks.size(),
+                foundWorks,
                 matchedImportedWorks,
                 updatedWorks,
                 worksWithAbstract,
