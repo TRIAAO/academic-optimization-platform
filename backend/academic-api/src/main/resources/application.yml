@@ -49,6 +49,20 @@ app:
   orcid:
     base-url: ${ORCID_BASE_URL:https://pub.orcid.org/v3.0}
 
+    oauth:
+      enabled: ${ORCID_OAUTH_ENABLED:false}
+      authorization-url: ${ORCID_OAUTH_AUTHORIZATION_URL:https://orcid.org/oauth/authorize}
+      token-url: ${ORCID_OAUTH_TOKEN_URL:https://orcid.org/oauth/token}
+      revoke-url: ${ORCID_OAUTH_REVOKE_URL:https://orcid.org/oauth/revoke}
+      client-id: ${ORCID_OAUTH_CLIENT_ID:}
+      client-secret: ${ORCID_OAUTH_CLIENT_SECRET:}
+      redirect-uri: ${ORCID_OAUTH_REDIRECT_URI:https://academic-api.triacompany.com/api/v1/orcid/oauth/callback}
+      frontend-redirect-uri: ${ORCID_OAUTH_FRONTEND_REDIRECT_URI:https://academic-optimization-platform.vercel.app/admin/orcid}
+      scope: ${ORCID_OAUTH_SCOPE:/authenticate}
+      state-secret: ${ORCID_OAUTH_STATE_SECRET:}
+      state-ttl-minutes: ${ORCID_OAUTH_STATE_TTL_MINUTES:10}
+      token-encryption-key: ${ORCID_OAUTH_TOKEN_ENCRYPTION_KEY:}
+
   openalex:
     base-url: ${OPENALEX_BASE_URL:https://api.openalex.org}
     mailto: ${OPENALEX_MAILTO:geral@triacompany.com}
