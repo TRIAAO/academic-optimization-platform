@@ -30,8 +30,8 @@ class OrcidOAuthStateServiceTest {
     @Test
     void shouldRejectTamperedState() {
         String state = stateService.create(UUID.randomUUID(), "admin@universidade.ao");
-        String tampered = state.substring(0, state.length() - 1)
-                + (state.endsWith("A") ? "B" : "A");
+        char replacement = state.charAt(0) == 'A' ? 'B' : 'A';
+        String tampered = replacement + state.substring(1);
 
         OrcidOAuthException exception = assertThrows(
                 OrcidOAuthException.class,
