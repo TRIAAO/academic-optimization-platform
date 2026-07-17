@@ -1,39 +1,105 @@
-import { BarChart3, ShieldCheck, X } from "lucide-react";
+import {
+  BarChart3,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ShieldCheck,
+  X
+} from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { APP_CONFIG } from "../../config/app";
 import { ADMIN_MODULES } from "../../config/modules";
 
-function SidebarContent({ onClose }) {
+function SidebarContent({
+  onClose,
+  collapsed = false,
+  mobile = false,
+  onToggleCollapsed
+}) {
   const visibleModules = ADMIN_MODULES.filter((item) => {
     return item.enabled && item.technical !== true;
   });
 
+  const isCollapsed = collapsed && !mobile;
+  const toggleLabel = collapsed ? "Expandir menu lateral" : "Recolher menu lateral";
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
+
   return (
     <div className="flex h-full flex-col bg-slate-950 text-white">
-      <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-900/30">
-            <BarChart3 className="h-6 w-6" />
+      <div
+        className={[
+          "flex h-20 items-center border-b border-white/10 transition-all duration-300",
+          isCollapsed
+            ? "flex-col justify-center gap-1 px-2"
+            : "justify-between px-6"
+        ].join(" ")}
+      >
+        <div
+          className={[
+            "flex min-w-0 items-center",
+            isCollapsed ? "justify-center" : "gap-3"
+          ].join(" ")}
+        >
+          <div
+            className={[
+              "flex shrink-0 items-center justify-center bg-blue-600 shadow-lg shadow-blue-900/30 transition-all duration-300",
+              isCollapsed
+                ? "h-8 w-8 rounded-xl"
+                : "h-11 w-11 rounded-2xl"
+            ].join(" ")}
+          >
+            <BarChart3
+              className={isCollapsed ? "h-5 w-5" : "h-6 w-6"}
+              aria-hidden="true"
+            />
           </div>
 
-          <div>
-            <p className="text-sm font-semibold leading-5">IMETRO</p>
-            <p className="text-xs text-slate-400">Painel Acadêmico</p>
-          </div>
+          {!isCollapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold leading-5">IMETRO</p>
+              <p className="truncate text-xs text-slate-400">Painel Acadêmico</p>
+            </div>
+          )}
         </div>
 
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden"
-          aria-label="Fechar menu"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        {mobile ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/25"
+            aria-label="Fechar menu"
+            title="Fechar menu"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            className={[
+              "inline-flex shrink-0 items-center justify-center border border-white/10 bg-white/5 text-slate-300 shadow-sm transition hover:border-blue-400/60 hover:bg-blue-500/15 hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/25",
+              isCollapsed
+                ? "h-7 w-7 rounded-lg"
+                : "h-10 w-10 rounded-xl"
+            ].join(" ")}
+            aria-label={toggleLabel}
+            aria-pressed={collapsed}
+            title={toggleLabel}
+          >
+            <ToggleIcon
+              className={isCollapsed ? "h-3.5 w-3.5" : "h-[18px] w-[18px]"}
+              aria-hidden="true"
+            />
+          </button>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-5">
-        <nav className="space-y-1">
+      <div
+        className={[
+          "flex-1 overflow-y-auto py-5 transition-all duration-300",
+          isCollapsed ? "px-2" : "px-4"
+        ].join(" ")}
+      >
+        <nav className="space-y-1" aria-label="Navegação principal">
           {visibleModules.map((item) => {
             const Icon = item.icon;
 
@@ -42,54 +108,87 @@ function SidebarContent({ onClose }) {
                 key={item.key}
                 to={item.href}
                 onClick={onClose}
+                aria-label={item.name}
+                title={isCollapsed ? item.name : undefined}
                 className={({ isActive }) =>
                   [
-                    "flex items-center gap-3 rounded-2xl px-3 py-3 text-sm font-medium transition",
+                    "flex min-h-12 items-center rounded-2xl py-3 text-sm font-medium transition",
+                    isCollapsed ? "justify-center px-2" : "gap-3 px-3",
                     isActive
                       ? "bg-blue-600 text-white shadow-lg shadow-blue-950/40"
                       : "text-slate-300 hover:bg-white/10 hover:text-white"
                   ].join(" ")
                 }
               >
-                <Icon className="h-5 w-5" />
-                <span>{item.name}</span>
+                <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+                {!isCollapsed && <span className="min-w-0 truncate">{item.name}</span>}
               </NavLink>
             );
           })}
         </nav>
       </div>
 
-      <div className="border-t border-white/10 p-5">
-        <div className="rounded-2xl bg-white/5 p-4">
-          <div className="flex items-start gap-3">
-            <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-400" />
-
-            <div>
-              <p className="text-xs font-semibold text-white">
-                Regra de segurança
-              </p>
-              <p className="mt-1 text-xs leading-5 text-slate-400">
-                Google Acadêmico apenas como checklist manual. Sem automação,
-                scraping ou alteração direta.
-              </p>
-            </div>
+      <div
+        className={[
+          "border-t border-white/10 transition-all duration-300",
+          isCollapsed ? "p-3" : "p-5"
+        ].join(" ")}
+      >
+        {isCollapsed ? (
+          <div
+            className="flex h-11 w-full items-center justify-center rounded-2xl bg-white/5 text-emerald-400"
+            aria-label="Regra de segurança do Google Acadêmico"
+            title="Google Acadêmico apenas como checklist manual"
+          >
+            <ShieldCheck className="h-5 w-5" aria-hidden="true" />
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="rounded-2xl bg-white/5 p-4">
+              <div className="flex items-start gap-3">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
 
-        <p className="mt-4 text-xs text-slate-500">
-          Executado por {APP_CONFIG.executor}
-        </p>
+                <div>
+                  <p className="text-xs font-semibold text-white">Regra de segurança</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
+                    Google Acadêmico apenas como checklist manual. Sem automação,
+                    scraping ou alteração direta.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-4 text-xs text-slate-500">
+              Executado por {APP_CONFIG.executor}
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
 }
 
-export default function Sidebar({ open, onClose }) {
+export default function Sidebar({
+  open,
+  onClose,
+  collapsed = false,
+  onToggleCollapsed
+}) {
   return (
     <>
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:w-72 lg:flex-col">
-        <SidebarContent onClose={onClose} />
-      </div>
+      <aside
+        className={[
+          "hidden lg:fixed lg:inset-y-0 lg:z-40 lg:flex lg:flex-col lg:transition-[width] lg:duration-300",
+          collapsed ? "lg:w-20" : "lg:w-72"
+        ].join(" ")}
+        aria-label="Menu lateral"
+      >
+        <SidebarContent
+          onClose={onClose}
+          collapsed={collapsed}
+          onToggleCollapsed={onToggleCollapsed}
+        />
+      </aside>
 
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -100,7 +199,7 @@ export default function Sidebar({ open, onClose }) {
           />
 
           <div className="absolute inset-y-0 left-0 w-80 max-w-[85vw]">
-            <SidebarContent onClose={onClose} />
+            <SidebarContent onClose={onClose} mobile />
           </div>
         </div>
       )}

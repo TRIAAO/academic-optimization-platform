@@ -1,4 +1,4 @@
-import { Menu, ShieldCheck, LogOut } from "lucide-react";
+import { LogOut, Menu, ShieldCheck } from "lucide-react";
 import { Outlet } from "react-router-dom";
 import { useState } from "react";
 import Sidebar from "../components/layout/Sidebar";
@@ -7,18 +7,58 @@ import { useAuth } from "../context/AuthContext";
 import { APP_CONFIG } from "../config/app";
 import { canViewTechnicalArea } from "../config/permissions";
 
+const SIDEBAR_STORAGE_KEY = "academic-platform-sidebar-collapsed";
+
+function getInitialSidebarState() {
+  try {
+    return window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true";
+  } catch (error) {
+    return false;
+  }
+}
+
 export default function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(getInitialSidebarState);
   const { user, logout } = useAuth();
 
   const isTechnicalUser = canViewTechnicalArea(user);
 
+  function handleToggleSidebar() {
+    setSidebarCollapsed((currentValue) => {
+      const nextValue = !currentValue;
+
+      try {
+        window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(nextValue));
+      } catch (error) {
+        // A interface continua funcional mesmo quando o armazenamento está indisponível.
+      }
+
+      return nextValue;
+    });
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-950 dark:bg-slate-900 dark:text-slate-100">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapsed={handleToggleSidebar}
+      />
 
-      <div className="min-h-screen lg:pl-72">
-        <header className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/95 lg:left-72">
+      <div
+        className={[
+          "min-h-screen transition-[padding-left] duration-300",
+          sidebarCollapsed ? "lg:pl-20" : "lg:pl-72"
+        ].join(" ")}
+      >
+        <header
+          className={[
+            "fixed left-0 right-0 top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur transition-[left] duration-300 dark:border-slate-800 dark:bg-slate-950/95",
+            sidebarCollapsed ? "lg:left-20" : "lg:left-72"
+          ].join(" ")}
+        >
           <div className="flex min-h-20 items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <button
