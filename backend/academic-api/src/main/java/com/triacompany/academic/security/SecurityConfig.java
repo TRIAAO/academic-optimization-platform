@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 "/api/v1/health",
                                 "/api/v1/system-status",
                                 "/api/v1/auth/**",
+                                "/api/v1/orcid/oauth/callback",
 
                                 "/v3/api-docs",
                                 "/v3/api-docs/**",
@@ -77,7 +78,7 @@ public class SecurityConfig {
                 "https://*.triacompany.com"
         ));
 
-                configuration.setAllowedMethods(List.of(
+        configuration.setAllowedMethods(List.of(
                 "GET",
                 "POST",
                 "PUT",
