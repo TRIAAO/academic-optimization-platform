@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   BookOpenCheck,
   BriefcaseBusiness,
@@ -10,6 +11,7 @@ import {
   Search,
   UserRoundSearch
 } from "lucide-react";
+import OrcidOAuthPanel from "../components/orcid/OrcidOAuthPanel";
 import Badge from "../components/ui/Badge";
 import EmptyState from "../components/ui/EmptyState";
 import ErrorState from "../components/ui/ErrorState";
@@ -21,6 +23,25 @@ import { orcidService } from "../services/orcidService";
 import { researcherService } from "../services/researcherService";
 import { formatDateTime } from "../utils/formatters";
 import { formatOrcidInput, isValidOrcid } from "../utils/orcid";
+
+const OAUTH_ERROR_MESSAGES = {
+  access_denied: "A autorização foi cancelada no ORCID.",
+  oauth_not_configured:
+    "A conexão OAuth ORCID ainda não está configurada neste ambiente.",
+  oauth_state_invalid:
+    "A autorização expirou ou não pôde ser validada. Inicie a conexão novamente.",
+  oauth_code_missing: "O ORCID não devolveu o código de autorização.",
+  oauth_token_exchange_failed:
+    "O ORCID recusou a troca do código de autorização.",
+  oauth_token_invalid:
+    "O ORCID não devolveu um identificador autenticado válido.",
+  orcid_link_conflict:
+    "O pesquisador já está associado a outro ORCID. Revise o cadastro antes de conectar.",
+  orcid_already_linked:
+    "Este ORCID já está vinculado a outro pesquisador da plataforma.",
+  researcher_not_found: "O pesquisador selecionado não foi encontrado.",
+  oauth_failed: "Não foi possível concluir a autenticação com o ORCID."
+};
 
 function isPublicHttpUrl(value) {
   try {
@@ -47,11 +68,14 @@ function AffiliationList({ title, items, emptyMessage }) {
               </p>
               {(item.roleTitle || item.departmentName) && (
                 <p className="mt-1 text-sm text-slate-600">
-                  {[item.roleTitle, item.departmentName].filter(Boolean).join(" · ")}
+                  {[item.roleTitle, item.departmentName]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               )}
               <p className="mt-2 text-xs font-semibold text-slate-500">
-                {[item.startDate, item.endDate].filter(Boolean).join(" — ") || "Período não informado"}
+                {[item.startDate, item.endDate].filter(Boolean).join(" — ") ||
+                  "Período não informado"}
                 {item.country ? ` · ${item.country}` : ""}
               </p>
             </article>
@@ -65,8 +89,11 @@ function AffiliationList({ title, items, emptyMessage }) {
 }
 
 function OrcidSummaryCard({ summary }) {
-  const displayName = summary.displayName || summary.researcherName || "Nome não publicado";
-  const publicWebsites = (summary.websites || []).filter((website) => isPublicHttpUrl(website.url));
+  const displayName =
+    summary.displayName || summary.researcherName || "Nome não publicado";
+  const publicWebsites = (summary.websites || []).filter((website) =>
+    isPublicHttpUrl(website.url)
+  );
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
@@ -76,7 +103,9 @@ function OrcidSummaryCard({ summary }) {
             <Badge variant="green">Autor encontrado</Badge>
             <Badge variant="slate">{summary.orcidId}</Badge>
           </div>
-          <h3 className="mt-3 text-2xl font-black text-slate-950">{displayName}</h3>
+          <h3 className="mt-3 text-2xl font-black text-slate-950">
+            {displayName}
+          </h3>
           <p className="mt-1 text-sm text-slate-500">
             Dados públicos recuperados diretamente do registo ORCID.
           </p>
@@ -145,26 +174,38 @@ function OrcidSummaryCard({ summary }) {
           <div>
             <h4 className="font-black text-slate-950">Palavras-chave</h4>
             <div className="mt-3 flex flex-wrap gap-2">
-              {summary.keywords?.length ? summary.keywords.map((keyword) => (
-                <Badge key={keyword} variant="blue">{keyword}</Badge>
-              )) : <p className="text-sm text-slate-500">Nenhuma palavra-chave pública.</p>}
+              {summary.keywords?.length ? (
+                summary.keywords.map((keyword) => (
+                  <Badge key={keyword} variant="blue">
+                    {keyword}
+                  </Badge>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Nenhuma palavra-chave pública.
+                </p>
+              )}
             </div>
           </div>
           <div>
             <h4 className="font-black text-slate-950">Sites públicos</h4>
             <div className="mt-3 space-y-2">
-              {publicWebsites.length ? publicWebsites.map((website, index) => (
-                <a
-                  key={`${website.url}-${index}`}
-                  href={website.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-blue-900"
-                >
-                  <Globe2 className="h-4 w-4" />
-                  {website.name || website.url}
-                </a>
-              )) : <p className="text-sm text-slate-500">Nenhum site público.</p>}
+              {publicWebsites.length ? (
+                publicWebsites.map((website, index) => (
+                  <a
+                    key={`${website.url}-${index}`}
+                    href={website.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-blue-900"
+                  >
+                    <Globe2 className="h-4 w-4" />
+                    {website.name || website.url}
+                  </a>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500">Nenhum site público.</p>
+              )}
             </div>
           </div>
         </div>
@@ -174,8 +215,13 @@ function OrcidSummaryCard({ summary }) {
 }
 
 export default function Orcid() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const researcherFromOAuth = searchParams.get("researcherId") || "";
+
   const [researchers, setResearchers] = useState([]);
-  const [selectedResearcherId, setSelectedResearcherId] = useState("");
+  const [selectedResearcherId, setSelectedResearcherId] = useState(
+    researcherFromOAuth
+  );
   const [manualOrcidId, setManualOrcidId] = useState("");
   const [summary, setSummary] = useState(null);
   const [works, setWorks] = useState([]);
@@ -192,19 +238,57 @@ export default function Orcid() {
     try {
       const data = await researcherService.findAll();
       setResearchers(data);
+
+      if (
+        researcherFromOAuth &&
+        data.some((researcher) => researcher.id === researcherFromOAuth)
+      ) {
+        setSelectedResearcherId(researcherFromOAuth);
+      }
+
+      return data;
     } catch (apiError) {
       setError(apiError?.message || "Não foi possível carregar pesquisadores.");
+      return [];
     } finally {
       setLoadingResearchers(false);
     }
   }
 
   useEffect(() => {
-    loadResearchers();
+    async function initializePage() {
+      await loadResearchers();
+
+      const oauthStatus = searchParams.get("orcidOAuth");
+      if (!oauthStatus) return;
+
+      if (oauthStatus === "success") {
+        const authenticatedOrcid = searchParams.get("orcid");
+        const profileSynchronized =
+          searchParams.get("profileSynchronized") === "true";
+
+        setSuccess(
+          `ORCID ${authenticatedOrcid || "autenticado"} conectado com sucesso.${
+            profileSynchronized
+              ? " O perfil acadêmico também foi sincronizado."
+              : " A conexão foi guardada; a sincronização do perfil pode ser executada manualmente."
+          }`
+        );
+      } else {
+        const errorCode = searchParams.get("code") || "oauth_failed";
+        setError(OAUTH_ERROR_MESSAGES[errorCode] || OAUTH_ERROR_MESSAGES.oauth_failed);
+      }
+
+      setSearchParams({});
+    }
+
+    initializePage();
   }, []);
 
   const selectedResearcher = useMemo(() => {
-    return researchers.find((researcher) => researcher.id === selectedResearcherId);
+    return researchers.find(
+      (researcher) => researcher.id === selectedResearcherId
+    );
   }, [researchers, selectedResearcherId]);
 
   const validManualOrcid = useMemo(
@@ -247,8 +331,12 @@ export default function Orcid() {
 
     try {
       await orcidService.importWorks(selectedResearcherId);
-      const worksData = await orcidService.findWorksByResearcher(selectedResearcherId);
-      const logsData = await orcidService.findImportLogsByResearcher(selectedResearcherId);
+      const worksData = await orcidService.findWorksByResearcher(
+        selectedResearcherId
+      );
+      const logsData = await orcidService.findImportLogsByResearcher(
+        selectedResearcherId
+      );
 
       setWorks(worksData);
       setLogs(logsData);
@@ -294,9 +382,15 @@ export default function Orcid() {
 
       setSummary(summaryData);
       setManualOrcidId(summaryData.orcidId || manualOrcidId);
-      setSuccess(`Autor encontrado no ORCID: ${summaryData.displayName || summaryData.orcidId}.`);
+      setSuccess(
+        `Autor encontrado no ORCID: ${
+          summaryData.displayName || summaryData.orcidId
+        }.`
+      );
     } catch (apiError) {
-      setError(apiError?.message || "Não foi possível consultar o ORCID informado.");
+      setError(
+        apiError?.message || "Não foi possível consultar o ORCID informado."
+      );
     } finally {
       setLoadingAction(false);
     }
@@ -307,9 +401,13 @@ export default function Orcid() {
       <PageHeader
         eyebrow="Integração científica"
         title="ORCID"
-        description="Importação de obras, resumo público e sincronização controlada com o perfil acadêmico do pesquisador."
+        description="Conexão autenticada, importação de obras, resumo público e sincronização controlada com o perfil acadêmico do pesquisador."
         actions={
-          <PrimaryButton variant="light" icon={RefreshCw} onClick={loadResearchers}>
+          <PrimaryButton
+            variant="light"
+            icon={RefreshCw}
+            onClick={loadResearchers}
+          >
             Atualizar pesquisadores
           </PrimaryButton>
         }
@@ -336,8 +434,8 @@ export default function Orcid() {
               </h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Selecione um pesquisador já cadastrado para importar obras e
-                sincronizar o perfil.
+                Selecione um pesquisador já cadastrado para autenticar o ORCID,
+                importar obras e sincronizar o perfil.
               </p>
 
               <select
@@ -347,6 +445,8 @@ export default function Orcid() {
                   setSummary(null);
                   setWorks([]);
                   setLogs([]);
+                  setError("");
+                  setSuccess("");
                 }}
                 className="mt-5 w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
               >
@@ -370,12 +470,18 @@ export default function Orcid() {
 
                   <div className="mt-3">
                     {selectedResearcher.orcidId ? (
-                      <Badge variant="green">{selectedResearcher.orcidId}</Badge>
+                      <Badge variant="green">
+                        {selectedResearcher.orcidId}
+                      </Badge>
                     ) : (
                       <Badge variant="amber">Sem ORCID no cadastro</Badge>
                     )}
                   </div>
                 </div>
+              )}
+
+              {selectedResearcherId && (
+                <OrcidOAuthPanel researcherId={selectedResearcherId} />
               )}
 
               <div className="mt-5 flex flex-wrap gap-3">
@@ -411,10 +517,14 @@ export default function Orcid() {
             </div>
 
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h3 className="font-black text-slate-950">Buscar autor pelo ORCID</h3>
+              <h3 className="font-black text-slate-950">
+                Buscar autor pelo ORCID
+              </h3>
 
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                Digite somente os 16 caracteres. Os hífens são adicionados automaticamente e a consulta não altera nenhum cadastro.
+                Consulta manual complementar. Digite os 16 caracteres; os hífens
+                são adicionados automaticamente e a consulta não altera nenhum
+                cadastro.
               </p>
 
               <form
@@ -424,7 +534,10 @@ export default function Orcid() {
                   handleSearchManualOrcid();
                 }}
               >
-                <label htmlFor="manual-orcid" className="text-xs font-black uppercase tracking-wide text-slate-600">
+                <label
+                  htmlFor="manual-orcid"
+                  className="text-xs font-black uppercase tracking-wide text-slate-600"
+                >
                   Número ORCID
                 </label>
                 <div className="mt-2 flex flex-col gap-3 sm:flex-row">
@@ -451,7 +564,13 @@ export default function Orcid() {
                     Buscar autor
                   </PrimaryButton>
                 </div>
-                <p className={`mt-2 text-xs ${manualOrcidId && !validManualOrcid ? "text-amber-700" : "text-slate-500"}`}>
+                <p
+                  className={`mt-2 text-xs ${
+                    manualOrcidId && !validManualOrcid
+                      ? "text-amber-700"
+                      : "text-slate-500"
+                  }`}
+                >
                   {manualOrcidId && !validManualOrcid
                     ? "Continue digitando ou confira o dígito verificador."
                     : "Também é possível colar o link completo do perfil ORCID."}
@@ -465,7 +584,7 @@ export default function Orcid() {
               <EmptyState
                 icon={UserRoundSearch}
                 title="Selecione um pesquisador"
-                description="Escolha um pesquisador com ORCID cadastrado ou consulte manualmente um ORCID público."
+                description="Escolha um pesquisador para conectar um ORCID autenticado ou consulte manualmente um registo público."
               />
             )}
 
@@ -493,7 +612,8 @@ export default function Orcid() {
                           {work.title || work.workTitle || "Obra sem título"}
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
-                          {work.publicationYear || work.year || "Ano não informado"}
+                          {work.publicationYear || work.year ||
+                            "Ano não informado"}
                         </p>
                       </div>
                     ))}
@@ -505,7 +625,9 @@ export default function Orcid() {
             {selectedResearcherId && (
               <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="font-black text-slate-950">Logs de importação</h3>
+                  <h3 className="font-black text-slate-950">
+                    Logs de importação
+                  </h3>
                   <Badge variant="slate">{logs.length} logs</Badge>
                 </div>
 
@@ -540,8 +662,8 @@ export default function Orcid() {
         <h3 className="font-black text-amber-950">Importante</h3>
         <p className="mt-2 text-sm leading-7 text-amber-900">
           ORCID, OpenAlex e Crossref são fontes permitidas para consulta e
-          organização acadêmica. Google Acadêmico permanece somente como
-          checklist manual, sem automação, scraping ou alteração direta.
+          organização acadêmica. Google Acadêmico permanece somente como checklist
+          manual, sem automação, scraping ou alteração direta.
         </p>
       </section>
     </div>
