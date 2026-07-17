@@ -6,6 +6,7 @@ import AcademicProfiles from "./pages/AcademicProfiles";
 import AcademicOptimization from "./pages/AcademicOptimization";
 import AcademicRecommendations from "./pages/AcademicRecommendations";
 import AbstractAnalysis from "./pages/AbstractAnalysis";
+import BibliographicDeduplication from "./pages/BibliographicDeduplication";
 import EditorialRecommendations from "./pages/EditorialRecommendations";
 import Audit from "./pages/Audit";
 import Crossref from "./pages/Crossref";
@@ -43,6 +44,10 @@ export default function App() {
           <Route path="orcid" element={<Orcid />} />
           <Route path="openalex" element={<OpenAlex />} />
           <Route path="manual-review" element={<ManualReview />} />
+          <Route
+            path="bibliographic-deduplication"
+            element={<BibliographicDeduplication />}
+          />
           <Route path="crossref" element={<Crossref />} />
           <Route path="reports" element={<Reports />} />
           <Route path="optimization" element={<AcademicOptimization />} />
