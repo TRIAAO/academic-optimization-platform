@@ -13,6 +13,7 @@ import {
   Link2,
   Languages,
   Network,
+  Scale,
   Sparkles,
   ShieldCheck,
   UserRoundSearch
@@ -135,6 +136,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Citações, H-index, i10-index, D-index e histórico manual."
+  },
+  {
+    key: "scientometric-analysis",
+    name: "Auditoria Cientométrica",
+    href: "/admin/scientometric-analysis",
+    icon: Scale,
+    enabled: true,
+    technical: false,
+    description: "D-index, vitalidade científica e validação institucional do e-mail."
   },
   {
     key: "google-scholar",
