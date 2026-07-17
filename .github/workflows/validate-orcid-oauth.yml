@@ -1,0 +1,87 @@
+name: Validate ORCID OAuth
+
+on:
+  push:
+    branches:
+      - feature/orcid-oauth2-linking
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "backend/academic-api/**"
+      - "frontend/**"
+      - ".github/workflows/validate-orcid-oauth.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend tests
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: academic_optimization_test
+          POSTGRES_USER: academic_user
+          POSTGRES_PASSWORD: academic_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U academic_user -d academic_optimization_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    defaults:
+      run:
+        working-directory: backend/academic-api
+
+    env:
+      DATABASE_URL: jdbc:postgresql://localhost:5432/academic_optimization_test
+      DATABASE_USERNAME: academic_user
+      DATABASE_PASSWORD: academic_password
+      JWT_SECRET: github-actions-academic-platform-secret-with-at-least-32-characters
+      ORCID_OAUTH_ENABLED: "false"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: backend/academic-api/pom.xml
+
+      - name: Run Maven tests
+        run: ./mvnw --batch-mode --update-snapshots clean test
+
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
