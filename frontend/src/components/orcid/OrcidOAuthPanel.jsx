@@ -103,8 +103,8 @@ export default function OrcidOAuthPanel({ researcherId, onConnectionChanged }) {
   const enabled = Boolean(configuration?.enabled);
 
   return (
-    <div className="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+    <div className="mt-5 min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="flex min-w-0 flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
@@ -120,9 +120,9 @@ export default function OrcidOAuthPanel({ researcherId, onConnectionChanged }) {
             )}
           </div>
 
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="font-black text-slate-950">
+          <div className="min-w-0 flex-1">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <p className="min-w-0 break-words font-black text-slate-950">
                 Conexão autenticada ORCID
               </p>
               {connected ? (
@@ -135,7 +135,7 @@ export default function OrcidOAuthPanel({ researcherId, onConnectionChanged }) {
             </div>
 
             {connected ? (
-              <div className="mt-2 space-y-1 text-sm text-slate-600">
+              <div className="mt-2 space-y-1 break-words text-sm text-slate-600">
                 <p>
                   ORCID autenticado: <strong>{connection.orcidId}</strong>
                 </p>
@@ -147,7 +147,7 @@ export default function OrcidOAuthPanel({ researcherId, onConnectionChanged }) {
                 </p>
               </div>
             ) : (
-              <p className="mt-2 text-sm leading-6 text-slate-600">
+              <p className="mt-2 break-words text-sm leading-6 text-slate-600">
                 {configuration?.message ||
                   "Autentique o investigador no ORCID para obter um identificador validado, sem digitação manual."}
               </p>
@@ -155,7 +155,7 @@ export default function OrcidOAuthPanel({ researcherId, onConnectionChanged }) {
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-wrap gap-2">
+        <div className="flex w-full min-w-0 flex-wrap gap-2 2xl:w-auto 2xl:shrink-0">
           {connected ? (
             <PrimaryButton
               variant="danger"
@@ -179,12 +179,12 @@ export default function OrcidOAuthPanel({ researcherId, onConnectionChanged }) {
       </div>
 
       {error && (
-        <p className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
+        <p className="mt-3 break-words rounded-xl bg-red-50 px-3 py-2 text-sm font-semibold text-red-700">
           {error}
         </p>
       )}
 
-      <p className="mt-3 text-xs leading-5 text-slate-500">
+      <p className="mt-3 break-words text-xs leading-5 text-slate-500">
         O fluxo usa OAuth 2.0 com consentimento explícito. A plataforma armazena os
         tokens de forma cifrada e não solicita a senha ORCID do pesquisador.
       </p>
