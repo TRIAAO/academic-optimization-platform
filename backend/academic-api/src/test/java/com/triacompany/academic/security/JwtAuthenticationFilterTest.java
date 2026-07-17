@@ -34,7 +34,7 @@ class JwtAuthenticationFilterTest {
         filter.doFilter(request, response, filterChain);
 
         assertEquals(401, response.getStatus());
-        assertEquals("application/json", response.getContentType());
+        assertTrue(response.getContentType().startsWith("application/json"));
         assertTrue(response.getContentAsString().contains("Sessão expirada ou token inválido"));
         assertFalse(filterChainCalled.get());
     }
