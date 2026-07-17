@@ -59,7 +59,21 @@ jobs:
           cache-dependency-path: backend/academic-api/pom.xml
 
       - name: Run Maven tests
-        run: ./mvnw --batch-mode --update-snapshots clean test
+        shell: bash
+        run: |
+          set -o pipefail
+          ./mvnw --batch-mode --update-snapshots clean test 2>&1 | tee maven.log
+
+      - name: Upload Maven diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-maven-diagnostics
+          path: |
+            backend/academic-api/maven.log
+            backend/academic-api/target/surefire-reports/**
+          if-no-files-found: warn
+          retention-days: 7
 
   frontend:
     name: Frontend build
