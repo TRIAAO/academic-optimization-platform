@@ -28,13 +28,15 @@ function SidebarContent({
       <div
         className={[
           "flex h-20 items-center border-b border-white/10 transition-all duration-300",
-          isCollapsed ? "justify-between px-2" : "justify-between px-6"
+          isCollapsed
+            ? "flex-col justify-center gap-1 px-2"
+            : "justify-between px-6"
         ].join(" ")}
       >
         <div
           className={[
             "flex min-w-0 items-center",
-            isCollapsed ? "gap-0" : "gap-3"
+            isCollapsed ? "justify-center" : "gap-3"
           ].join(" ")}
         >
           <div
@@ -76,7 +78,7 @@ function SidebarContent({
             className={[
               "inline-flex shrink-0 items-center justify-center border border-white/10 bg-white/5 text-slate-300 shadow-sm transition hover:border-blue-400/60 hover:bg-blue-500/15 hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/25",
               isCollapsed
-                ? "h-8 w-8 rounded-lg"
+                ? "h-7 w-7 rounded-lg"
                 : "h-10 w-10 rounded-xl"
             ].join(" ")}
             aria-label={toggleLabel}
@@ -84,7 +86,7 @@ function SidebarContent({
             title={toggleLabel}
           >
             <ToggleIcon
-              className={isCollapsed ? "h-4 w-4" : "h-[18px] w-[18px]"}
+              className={isCollapsed ? "h-3.5 w-3.5" : "h-[18px] w-[18px]"}
               aria-hidden="true"
             />
           </button>
