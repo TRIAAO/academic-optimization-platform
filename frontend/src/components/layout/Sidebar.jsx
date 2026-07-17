@@ -9,29 +9,46 @@ import { NavLink } from "react-router-dom";
 import { APP_CONFIG } from "../../config/app";
 import { ADMIN_MODULES } from "../../config/modules";
 
-function SidebarContent({ onClose, collapsed = false, mobile = false }) {
+function SidebarContent({
+  onClose,
+  collapsed = false,
+  mobile = false,
+  onToggleCollapsed
+}) {
   const visibleModules = ADMIN_MODULES.filter((item) => {
     return item.enabled && item.technical !== true;
   });
 
   const isCollapsed = collapsed && !mobile;
+  const toggleLabel = collapsed ? "Expandir menu lateral" : "Recolher menu lateral";
+  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
 
   return (
     <div className="flex h-full flex-col bg-slate-950 text-white">
       <div
         className={[
           "flex h-20 items-center border-b border-white/10 transition-all duration-300",
-          isCollapsed ? "justify-center px-3" : "justify-between px-6"
+          isCollapsed ? "justify-between px-2" : "justify-between px-6"
         ].join(" ")}
       >
         <div
           className={[
             "flex min-w-0 items-center",
-            isCollapsed ? "justify-center" : "gap-3"
+            isCollapsed ? "gap-0" : "gap-3"
           ].join(" ")}
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-blue-600 shadow-lg shadow-blue-900/30">
-            <BarChart3 className="h-6 w-6" />
+          <div
+            className={[
+              "flex shrink-0 items-center justify-center bg-blue-600 shadow-lg shadow-blue-900/30 transition-all duration-300",
+              isCollapsed
+                ? "h-8 w-8 rounded-xl"
+                : "h-11 w-11 rounded-2xl"
+            ].join(" ")}
+          >
+            <BarChart3
+              className={isCollapsed ? "h-5 w-5" : "h-6 w-6"}
+              aria-hidden="true"
+            />
           </div>
 
           {!isCollapsed && (
@@ -42,7 +59,7 @@ function SidebarContent({ onClose, collapsed = false, mobile = false }) {
           )}
         </div>
 
-        {mobile && (
+        {mobile ? (
           <button
             type="button"
             onClick={onClose}
@@ -51,6 +68,25 @@ function SidebarContent({ onClose, collapsed = false, mobile = false }) {
             title="Fechar menu"
           >
             <X className="h-5 w-5" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onToggleCollapsed}
+            className={[
+              "inline-flex shrink-0 items-center justify-center border border-white/10 bg-white/5 text-slate-300 shadow-sm transition hover:border-blue-400/60 hover:bg-blue-500/15 hover:text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/25",
+              isCollapsed
+                ? "h-8 w-8 rounded-lg"
+                : "h-10 w-10 rounded-xl"
+            ].join(" ")}
+            aria-label={toggleLabel}
+            aria-pressed={collapsed}
+            title={toggleLabel}
+          >
+            <ToggleIcon
+              className={isCollapsed ? "h-4 w-4" : "h-[18px] w-[18px]"}
+              aria-hidden="true"
+            />
           </button>
         )}
       </div>
@@ -136,9 +172,6 @@ export default function Sidebar({
   collapsed = false,
   onToggleCollapsed
 }) {
-  const toggleLabel = collapsed ? "Expandir menu lateral" : "Recolher menu lateral";
-  const ToggleIcon = collapsed ? PanelLeftOpen : PanelLeftClose;
-
   return (
     <>
       <aside
@@ -148,18 +181,11 @@ export default function Sidebar({
         ].join(" ")}
         aria-label="Menu lateral"
       >
-        <SidebarContent onClose={onClose} collapsed={collapsed} />
-
-        <button
-          type="button"
-          onClick={onToggleCollapsed}
-          className="absolute -right-5 top-5 z-50 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-lg transition hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/25 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-blue-500 dark:hover:bg-slate-800 dark:hover:text-blue-300"
-          aria-label={toggleLabel}
-          aria-pressed={collapsed}
-          title={toggleLabel}
-        >
-          <ToggleIcon className="h-4 w-4" aria-hidden="true" />
-        </button>
+        <SidebarContent
+          onClose={onClose}
+          collapsed={collapsed}
+          onToggleCollapsed={onToggleCollapsed}
+        />
       </aside>
 
       {open && (
