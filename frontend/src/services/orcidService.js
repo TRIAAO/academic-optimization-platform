@@ -54,5 +54,37 @@ export const orcidService = {
       params: { orcid: orcidId }
     });
     return response.data;
+  },
+
+  async getOAuthConfiguration() {
+    const response = await apiClient.get(
+      "/api/v1/orcid/oauth/configuration"
+    );
+
+    return response.data;
+  },
+
+  async getOAuthConnection(researcherId) {
+    const response = await apiClient.get(
+      `/api/v1/orcid/oauth/researchers/${researcherId}/connection`
+    );
+
+    return response.data;
+  },
+
+  async createOAuthAuthorization(researcherId) {
+    const response = await apiClient.post(
+      `/api/v1/orcid/oauth/researchers/${researcherId}/authorization-url`
+    );
+
+    return response.data;
+  },
+
+  async disconnectOAuth(researcherId) {
+    const response = await apiClient.delete(
+      `/api/v1/orcid/oauth/researchers/${researcherId}/connection`
+    );
+
+    return response.data;
   }
 };
