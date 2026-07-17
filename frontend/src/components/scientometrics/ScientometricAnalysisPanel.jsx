@@ -72,13 +72,41 @@ function emailTone(status) {
   return "neutral";
 }
 
-function AssessmentCard({ icon: Icon, eyebrow, title, value, status, explanation, tone }) {
-  const styles = TONES[tone] || TONES.neutral;
+function EmailValue({ value }) {
+  const text = String(value || "Não informado");
+  const separatorIndex = text.indexOf("@");
+
+  if (separatorIndex <= 0 || separatorIndex === text.length - 1) {
+    return <>{text}</>;
+  }
 
   return (
-    <article className={`rounded-3xl border p-5 ${styles.card}`}>
-      <div className="flex items-start gap-4">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${styles.icon}`}>
+    <>
+      <span className="block">{text.slice(0, separatorIndex + 1)}</span>
+      <span className="block">{text.slice(separatorIndex + 1)}</span>
+    </>
+  );
+}
+
+function AssessmentCard({
+  icon: Icon,
+  eyebrow,
+  title,
+  value,
+  status,
+  explanation,
+  tone,
+  valueType = "metric"
+}) {
+  const styles = TONES[tone] || TONES.neutral;
+  const isEmail = valueType === "email";
+
+  return (
+    <article className={`min-w-0 rounded-3xl border p-5 ${styles.card}`}>
+      <div className="flex min-w-0 items-start gap-4">
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${styles.icon}`}
+        >
           <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
 
@@ -87,12 +115,24 @@ function AssessmentCard({ icon: Icon, eyebrow, title, value, status, explanation
             {eyebrow}
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <h4 className="text-lg font-black text-slate-950">{title}</h4>
+            <h4 className="text-base font-black text-slate-950 sm:text-lg">{title}</h4>
             <span className={`rounded-full px-2.5 py-1 text-xs font-black ${styles.badge}`}>
               {STATUS_LABELS[status] || status}
             </span>
           </div>
-          {value && <p className="mt-3 text-2xl font-black text-slate-950">{value}</p>}
+          {value && (
+            <p
+              className={[
+                "mt-3 max-w-full font-black leading-tight text-slate-950",
+                isEmail
+                  ? "text-base sm:text-lg"
+                  : "text-lg sm:text-xl"
+              ].join(" ")}
+              title={String(value)}
+            >
+              {isEmail ? <EmailValue value={value} /> : value}
+            </p>
+          )}
           <p className="mt-2 text-sm leading-6 text-slate-600">{explanation}</p>
         </div>
       </div>
@@ -221,6 +261,7 @@ export default function ScientometricAnalysisPanel({ analysis, loading = false }
           eyebrow="Identidade institucional"
           title="E-mail acadêmico"
           value={email.email || "Não informado"}
+          valueType="email"
           status={email.status}
           explanation={email.explanation}
           tone={emailTone(email.status)}
@@ -230,19 +271,19 @@ export default function ScientometricAnalysisPanel({ analysis, loading = false }
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl bg-slate-50 p-4">
           <p className="text-xs font-black uppercase tracking-wide text-slate-500">Citações recentes</p>
-          <p className="mt-2 text-xl font-black text-slate-950">
+          <p className="mt-2 text-lg font-black text-slate-950">
             {formatValue(vitality.citationsRecentPercent, "%")}
           </p>
         </div>
         <div className="rounded-2xl bg-slate-50 p-4">
           <p className="text-xs font-black uppercase tracking-wide text-slate-500">H-index recente</p>
-          <p className="mt-2 text-xl font-black text-slate-950">
+          <p className="mt-2 text-lg font-black text-slate-950">
             {formatValue(vitality.hIndexRecentPercent, "%")}
           </p>
         </div>
         <div className="rounded-2xl bg-slate-50 p-4">
           <p className="text-xs font-black uppercase tracking-wide text-slate-500">i10-index recente</p>
-          <p className="mt-2 text-xl font-black text-slate-950">
+          <p className="mt-2 text-lg font-black text-slate-950">
             {formatValue(vitality.i10IndexRecentPercent, "%")}
           </p>
         </div>
