@@ -185,7 +185,7 @@ export default function ScientometricAnalysis() {
               <p className="text-xs font-black uppercase tracking-wide text-slate-500">
                 Pesquisador selecionado
               </p>
-              <p className="mt-2 font-black text-slate-950">
+              <p className="mt-2 text-sm font-bold text-slate-950 sm:text-base">
                 {selectedResearcher.fullName}
               </p>
               <p className="mt-1 text-sm text-slate-500">
