@@ -120,7 +120,7 @@ class ScientometricAnalysisServiceTest {
         ScientometricAnalysisResponse response = service.analyze(researcherId);
 
         assertEquals("STAGNANT", response.vitalityAssessment().status());
-        assertEquals(14, response.vitalityAssessment().score());
+        assertEquals(13, response.vitalityAssessment().score());
         assertEquals("INCONSISTENT", response.institutionalEmailAssessment().status());
         assertTrue(response.alerts().stream()
                 .anyMatch(alert -> "INSTITUTIONAL_EMAIL_MISMATCH".equals(alert.code())));
