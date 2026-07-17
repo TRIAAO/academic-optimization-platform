@@ -21,6 +21,7 @@ import Orcid from "./pages/Orcid";
 import Reports from "./pages/Reports";
 import ResearcherDetails from "./pages/ResearcherDetails";
 import Researchers from "./pages/Researchers";
+import ScientometricAnalysis from "./pages/ScientometricAnalysis";
 import ScientometricMetrics from "./pages/ScientometricMetrics";
 
 export default function App() {
@@ -51,6 +52,10 @@ export default function App() {
           <Route
             path="scientometric-metrics"
             element={<ScientometricMetrics />}
+          />
+          <Route
+            path="scientometric-analysis"
+            element={<ScientometricAnalysis />}
           />
           <Route
             path="google-scholar-checklist"
