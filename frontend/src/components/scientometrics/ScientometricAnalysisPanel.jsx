@@ -72,13 +72,61 @@ function emailTone(status) {
   return "neutral";
 }
 
-function AssessmentCard({ icon: Icon, eyebrow, title, value, status, explanation, tone }) {
+function AssessmentValue({ value, kind = "metric" }) {
+  if (!value) return null;
+
+  if (kind === "email") {
+    const normalizedValue = String(value);
+    const separatorIndex = normalizedValue.lastIndexOf("@");
+
+    if (separatorIndex > 0 && separatorIndex < normalizedValue.length - 1) {
+      const localPart = normalizedValue.slice(0, separatorIndex);
+      const domainPart = normalizedValue.slice(separatorIndex + 1);
+
+      return (
+        <p
+          className="mt-3 min-w-0 max-w-full leading-tight text-slate-950"
+          title={normalizedValue}
+        >
+          <span className="block break-all text-lg font-black sm:text-xl">
+            {localPart}@
+          </span>
+          <span className="mt-0.5 block break-all text-base font-bold sm:text-lg">
+            {domainPart}
+          </span>
+        </p>
+      );
+    }
+  }
+
+  return (
+    <p
+      className="mt-3 max-w-full break-words text-xl font-black leading-tight text-slate-950 sm:text-2xl"
+      title={String(value)}
+    >
+      {value}
+    </p>
+  );
+}
+
+function AssessmentCard({
+  icon: Icon,
+  eyebrow,
+  title,
+  value,
+  valueKind = "metric",
+  status,
+  explanation,
+  tone
+}) {
   const styles = TONES[tone] || TONES.neutral;
 
   return (
     <article className={`min-w-0 rounded-3xl border p-5 ${styles.card}`}>
       <div className="flex min-w-0 items-start gap-4">
-        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${styles.icon}`}>
+        <div
+          className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${styles.icon}`}
+        >
           <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
 
@@ -88,18 +136,13 @@ function AssessmentCard({ icon: Icon, eyebrow, title, value, status, explanation
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <h4 className="text-lg font-black text-slate-950">{title}</h4>
-            <span className={`rounded-full px-2.5 py-1 text-xs font-black ${styles.badge}`}>
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs font-black ${styles.badge}`}
+            >
               {STATUS_LABELS[status] || status}
             </span>
           </div>
-          {value && (
-            <p
-              className="mt-3 max-w-full break-words text-xl font-black leading-tight text-slate-950 sm:text-2xl [overflow-wrap:anywhere]"
-              title={String(value)}
-            >
-              {value}
-            </p>
-          )}
+          <AssessmentValue value={value} kind={valueKind} />
           <p className="mt-2 text-sm leading-6 text-slate-600">{explanation}</p>
         </div>
       </div>
@@ -132,12 +175,21 @@ function AlertCard({ alert }) {
   return (
     <article className={`rounded-2xl border p-4 ${styles.wrapper}`}>
       <div className="flex items-start gap-3">
-        <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${styles.icon}`} aria-hidden="true" />
+        <Icon
+          className={`mt-0.5 h-5 w-5 shrink-0 ${styles.icon}`}
+          aria-hidden="true"
+        />
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h5 className="font-black text-slate-950">{alert.title}</h5>
-            <span className={`rounded-full px-2 py-0.5 text-[11px] font-black ${styles.badge}`}>
-              {severity === "HIGH" ? "Alta" : severity === "MEDIUM" ? "Média" : "Informativa"}
+            <span
+              className={`rounded-full px-2 py-0.5 text-[11px] font-black ${styles.badge}`}
+            >
+              {severity === "HIGH"
+                ? "Alta"
+                : severity === "MEDIUM"
+                  ? "Média"
+                  : "Informativa"}
             </span>
           </div>
           <p className="mt-2 text-sm leading-6 text-slate-700">{alert.message}</p>
@@ -188,7 +240,8 @@ export default function ScientometricAnalysisPanel({ analysis, loading = false }
             D-index, vitalidade e e-mail institucional
           </h3>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-500">
-            Diagnóstico calculado exclusivamente com as medições registadas. Nenhum dado externo é alterado automaticamente.
+            Diagnóstico calculado exclusivamente com as medições registadas. Nenhum
+            dado externo é alterado automaticamente.
           </p>
         </div>
 
@@ -228,6 +281,7 @@ export default function ScientometricAnalysisPanel({ analysis, loading = false }
           eyebrow="Identidade institucional"
           title="E-mail acadêmico"
           value={email.email || "Não informado"}
+          valueKind="email"
           status={email.status}
           explanation={email.explanation}
           tone={emailTone(email.status)}
@@ -236,19 +290,25 @@ export default function ScientometricAnalysisPanel({ analysis, loading = false }
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl bg-slate-50 p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-slate-500">Citações recentes</p>
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+            Citações recentes
+          </p>
           <p className="mt-2 text-xl font-black text-slate-950">
             {formatValue(vitality.citationsRecentPercent, "%")}
           </p>
         </div>
         <div className="rounded-2xl bg-slate-50 p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-slate-500">H-index recente</p>
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+            H-index recente
+          </p>
           <p className="mt-2 text-xl font-black text-slate-950">
             {formatValue(vitality.hIndexRecentPercent, "%")}
           </p>
         </div>
         <div className="rounded-2xl bg-slate-50 p-4">
-          <p className="text-xs font-black uppercase tracking-wide text-slate-500">i10-index recente</p>
+          <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+            i10-index recente
+          </p>
           <p className="mt-2 text-xl font-black text-slate-950">
             {formatValue(vitality.i10IndexRecentPercent, "%")}
           </p>
@@ -270,7 +330,10 @@ export default function ScientometricAnalysisPanel({ analysis, loading = false }
       )}
 
       <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs leading-6 text-slate-600">
-        <strong className="text-slate-900">Metodologia:</strong> desvio D-index em relação ao H-index; vitalidade ponderada por citações (50%), H-index (30%) e i10-index (20%) dos últimos 6 anos; domínio institucional validado contra a lista oficial configurada no ambiente.
+        <strong className="text-slate-900">Metodologia:</strong> desvio D-index em
+        relação ao H-index; vitalidade ponderada por citações (50%), H-index (30%) e
+        i10-index (20%) dos últimos 6 anos; domínio institucional validado contra a
+        lista oficial configurada no ambiente.
       </div>
     </section>
   );
