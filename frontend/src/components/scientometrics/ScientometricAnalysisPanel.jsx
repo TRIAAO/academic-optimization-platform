@@ -76,8 +76,8 @@ function AssessmentCard({ icon: Icon, eyebrow, title, value, status, explanation
   const styles = TONES[tone] || TONES.neutral;
 
   return (
-    <article className={`rounded-3xl border p-5 ${styles.card}`}>
-      <div className="flex items-start gap-4">
+    <article className={`min-w-0 rounded-3xl border p-5 ${styles.card}`}>
+      <div className="flex min-w-0 items-start gap-4">
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl ${styles.icon}`}>
           <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
@@ -92,7 +92,14 @@ function AssessmentCard({ icon: Icon, eyebrow, title, value, status, explanation
               {STATUS_LABELS[status] || status}
             </span>
           </div>
-          {value && <p className="mt-3 text-2xl font-black text-slate-950">{value}</p>}
+          {value && (
+            <p
+              className="mt-3 max-w-full break-words text-xl font-black leading-tight text-slate-950 sm:text-2xl [overflow-wrap:anywhere]"
+              title={String(value)}
+            >
+              {value}
+            </p>
+          )}
           <p className="mt-2 text-sm leading-6 text-slate-600">{explanation}</p>
         </div>
       </div>
