@@ -16,7 +16,7 @@ public class BibliographicSimilarityEngine {
     private static final Set<String> STOP_WORDS = Set.of(
             "a", "o", "as", "os", "um", "uma", "de", "da", "do", "das", "dos",
             "e", "em", "na", "no", "nas", "nos", "para", "por", "com", "sem",
-            "the", "a", "an", "and", "of", "in", "on", "for", "to", "with", "without"
+            "the", "an", "and", "of", "in", "on", "for", "to", "with", "without"
     );
 
     public Result compare(
@@ -103,8 +103,8 @@ public class BibliographicSimilarityEngine {
         }
 
         String normalized = value.trim().toLowerCase(Locale.ROOT)
-                .replaceFirst("^https?://(dx\\.)?doi\\.org/", "")
                 .replaceFirst("^doi:\\s*", "")
+                .replaceFirst("^https?://(dx\\.)?doi\\.org/", "")
                 .trim();
 
         return normalized.isBlank() ? null : normalized;
