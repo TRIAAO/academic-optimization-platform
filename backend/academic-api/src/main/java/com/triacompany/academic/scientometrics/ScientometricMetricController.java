@@ -14,6 +14,7 @@ import java.util.UUID;
 public class ScientometricMetricController {
 
     private final ScientometricMetricService scientometricMetricService;
+    private final ScientometricAnalysisService scientometricAnalysisService;
 
     @PostMapping("/api/v1/researchers/{researcherId}/scientometric-metrics")
     @ResponseStatus(HttpStatus.CREATED)
@@ -35,6 +36,12 @@ public class ScientometricMetricController {
     @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
     public ScientometricMetricResponse findLatestByResearcher(@PathVariable UUID researcherId) {
         return scientometricMetricService.findLatestByResearcher(researcherId);
+    }
+
+    @GetMapping("/api/v1/researchers/{researcherId}/scientometric-analysis")
+    @PreAuthorize("hasAnyRole('ADMIN', 'INSTITUTION')")
+    public ScientometricAnalysisResponse analyze(@PathVariable UUID researcherId) {
+        return scientometricAnalysisService.analyze(researcherId);
     }
 
     @GetMapping("/api/v1/scientometric-metrics/{id}")
