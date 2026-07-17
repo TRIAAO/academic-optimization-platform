@@ -20,6 +20,22 @@ function parseJwtPayload(token) {
   }
 }
 
+function isTokenExpired(token) {
+  const payload = parseJwtPayload(token);
+  const expiration = Number(payload?.exp);
+
+  if (!Number.isFinite(expiration)) {
+    return true;
+  }
+
+  return Date.now() >= expiration * 1000;
+}
+
+function clearStoredSession() {
+  localStorage.removeItem(STORAGE_KEYS.token);
+  localStorage.removeItem(STORAGE_KEYS.user);
+}
+
 function extractToken(data) {
   return (
     data?.token ||
@@ -57,6 +73,8 @@ function extractUser(data, email, token) {
 
 export const authService = {
   async login({ email, password }) {
+    clearStoredSession();
+
     const payload = {
       email,
       username: email,
@@ -86,15 +104,16 @@ export const authService = {
   },
 
   logout() {
-    localStorage.removeItem(STORAGE_KEYS.token);
-    localStorage.removeItem(STORAGE_KEYS.user);
+    clearStoredSession();
   },
 
   getStoredSession() {
     const token = localStorage.getItem(STORAGE_KEYS.token);
     const storedUser = localStorage.getItem(STORAGE_KEYS.user);
 
-    if (!token) {
+    if (!token || isTokenExpired(token)) {
+      clearStoredSession();
+
       return {
         token: null,
         user: null
