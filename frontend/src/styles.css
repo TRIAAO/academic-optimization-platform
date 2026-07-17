@@ -1,16 +1,78 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  --font-heading: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 0.9375rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.375rem;
+  --text-2xl: 1.75rem;
+  --text-3xl: 2rem;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  --transition-fast: 150ms ease;
+  --transition-default: 220ms ease;
+
+  --app-background: #f1f5f9;
+  --app-surface: #ffffff;
+  --app-surface-muted: #f8fafc;
+  --app-surface-raised: #ffffff;
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+  --app-border: #e2e8f0;
+  --app-scroll-track: #e2e8f0;
+  --app-scroll-thumb: #94a3b8;
+  --app-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
+
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--app-text);
+  background: var(--app-background);
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html.dark {
+  --app-background: #0b1120;
+  --app-surface: #111827;
+  --app-surface-muted: #172033;
+  --app-surface-raised: #182235;
+  --app-text: #f8fafc;
+  --app-text-muted: #94a3b8;
+  --app-border: #334155;
+  --app-scroll-track: #111827;
+  --app-scroll-thumb: #475569;
+  --app-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+  color-scheme: dark;
 }
 
 * {
@@ -26,12 +88,73 @@ body,
   overflow-x: hidden;
 }
 
+html {
+  font-family: var(--font-body);
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: var(--app-text);
   background:
     radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 30%),
     linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+  transition:
+    background-color var(--transition-default),
+    color var(--transition-default);
+}
+
+html.dark body {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 28%),
+    linear-gradient(135deg, #0b1120 0%, #111827 100%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading {
+  font-family: var(--font-heading);
+  letter-spacing: -0.025em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+}
+
+.font-black.text-3xl,
+.font-black.text-4xl,
+.font-black.text-5xl,
+.font-bold.text-3xl,
+.font-bold.text-4xl,
+.font-bold.text-5xl {
+  font-family: var(--font-heading);
+  letter-spacing: -0.035em;
+}
+
+p,
+li,
+td,
+th,
+label,
+input,
+textarea,
+select,
+button {
+  text-wrap: pretty;
 }
 
 button,
@@ -39,6 +162,24 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+  transition-duration: var(--transition-fast);
+  transition-timing-function: ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid rgba(59, 130, 246, 0.3);
+  outline-offset: 2px;
 }
 
 a {
@@ -52,8 +193,26 @@ select {
   max-width: 100%;
 }
 
+html.dark input,
+html.dark textarea,
+html.dark select {
+  color: #f8fafc;
+  accent-color: #3b82f6;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
 pre {
   max-width: 100%;
+}
+
+::selection {
+  color: #ffffff;
+  background: #2563eb;
 }
 
 ::-webkit-scrollbar {
@@ -62,11 +221,12 @@ pre {
 }
 
 ::-webkit-scrollbar-track {
-  background: #e2e8f0;
+  background: var(--app-scroll-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #94a3b8;
+  background: var(--app-scroll-thumb);
+  border: 2px solid var(--app-scroll-track);
   border-radius: 999px;
 }
 
@@ -74,8 +234,296 @@ pre {
   background: #64748b;
 }
 
+.theme-toggle {
+  color-scheme: light dark;
+}
+
+/*
+ * Compatibilidade temática centralizada para os componentes já existentes.
+ * A estratégia preserva as classes Tailwind atuais e oferece superfícies,
+ * textos, bordas e estados equivalentes no modo escuro.
+ */
+.dark .bg-white {
+  background-color: var(--app-surface);
+}
+
+.dark .bg-white\/95 {
+  background-color: rgba(17, 24, 39, 0.95);
+}
+
+.dark .bg-slate-50 {
+  background-color: #111827;
+}
+
+.dark .bg-slate-100 {
+  background-color: #0f172a;
+}
+
+.dark .bg-slate-200 {
+  background-color: #334155;
+}
+
+.dark .bg-slate-300 {
+  background-color: #475569;
+}
+
+.dark .text-slate-950,
+.dark .text-slate-900 {
+  color: #f8fafc;
+}
+
+.dark .text-slate-800 {
+  color: #e2e8f0;
+}
+
+.dark .text-slate-700 {
+  color: #cbd5e1;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400 {
+  color: #94a3b8;
+}
+
+.dark .border-slate-100,
+.dark .border-slate-200 {
+  border-color: #334155;
+}
+
+.dark .border-slate-300 {
+  border-color: #475569;
+}
+
+.dark .divide-slate-100 > :not(:last-child),
+.dark .divide-slate-200 > :not(:last-child) {
+  border-color: #334155;
+}
+
+.dark .shadow-slate-950\/10,
+.dark .shadow-slate-900\/10,
+.dark .shadow-slate-900\/5 {
+  --tw-shadow-color: rgba(0, 0, 0, 0.32);
+}
+
+.dark .bg-blue-50 {
+  background-color: rgba(37, 99, 235, 0.14);
+}
+
+.dark .bg-blue-100 {
+  background-color: rgba(37, 99, 235, 0.22);
+}
+
+.dark .border-blue-100,
+.dark .border-blue-200 {
+  border-color: rgba(96, 165, 250, 0.34);
+}
+
+.dark .text-blue-600,
+.dark .text-blue-700,
+.dark .text-blue-800 {
+  color: #93c5fd;
+}
+
+.dark .bg-emerald-50,
+.dark .bg-green-50 {
+  background-color: rgba(16, 185, 129, 0.14);
+}
+
+.dark .bg-emerald-100,
+.dark .bg-green-100 {
+  background-color: rgba(16, 185, 129, 0.22);
+}
+
+.dark .border-emerald-100,
+.dark .border-emerald-200,
+.dark .border-green-100,
+.dark .border-green-200 {
+  border-color: rgba(52, 211, 153, 0.32);
+}
+
+.dark .text-emerald-600,
+.dark .text-emerald-700,
+.dark .text-emerald-800,
+.dark .text-green-600,
+.dark .text-green-700,
+.dark .text-green-800 {
+  color: #6ee7b7;
+}
+
+.dark .bg-amber-50,
+.dark .bg-yellow-50,
+.dark .bg-orange-50 {
+  background-color: rgba(245, 158, 11, 0.14);
+}
+
+.dark .bg-amber-100,
+.dark .bg-yellow-100,
+.dark .bg-orange-100 {
+  background-color: rgba(245, 158, 11, 0.22);
+}
+
+.dark .border-amber-100,
+.dark .border-amber-200,
+.dark .border-yellow-100,
+.dark .border-yellow-200,
+.dark .border-orange-100,
+.dark .border-orange-200 {
+  border-color: rgba(251, 191, 36, 0.34);
+}
+
+.dark .text-amber-600,
+.dark .text-amber-700,
+.dark .text-amber-800,
+.dark .text-yellow-600,
+.dark .text-yellow-700,
+.dark .text-yellow-800,
+.dark .text-orange-600,
+.dark .text-orange-700,
+.dark .text-orange-800 {
+  color: #fcd34d;
+}
+
+.dark .bg-red-50,
+.dark .bg-rose-50 {
+  background-color: rgba(239, 68, 68, 0.14);
+}
+
+.dark .bg-red-100,
+.dark .bg-rose-100 {
+  background-color: rgba(239, 68, 68, 0.22);
+}
+
+.dark .border-red-100,
+.dark .border-red-200,
+.dark .border-rose-100,
+.dark .border-rose-200 {
+  border-color: rgba(248, 113, 113, 0.34);
+}
+
+.dark .text-red-600,
+.dark .text-red-700,
+.dark .text-red-800,
+.dark .text-rose-600,
+.dark .text-rose-700,
+.dark .text-rose-800 {
+  color: #fca5a5;
+}
+
+.dark .bg-violet-50,
+.dark .bg-purple-50,
+.dark .bg-indigo-50 {
+  background-color: rgba(139, 92, 246, 0.14);
+}
+
+.dark .bg-violet-100,
+.dark .bg-purple-100,
+.dark .bg-indigo-100 {
+  background-color: rgba(139, 92, 246, 0.22);
+}
+
+.dark .border-violet-100,
+.dark .border-violet-200,
+.dark .border-purple-100,
+.dark .border-purple-200,
+.dark .border-indigo-100,
+.dark .border-indigo-200 {
+  border-color: rgba(167, 139, 250, 0.34);
+}
+
+.dark .text-violet-600,
+.dark .text-violet-700,
+.dark .text-violet-800,
+.dark .text-purple-600,
+.dark .text-purple-700,
+.dark .text-purple-800,
+.dark .text-indigo-600,
+.dark .text-indigo-700,
+.dark .text-indigo-800 {
+  color: #c4b5fd;
+}
+
+.dark .bg-cyan-50,
+.dark .bg-sky-50 {
+  background-color: rgba(14, 165, 233, 0.14);
+}
+
+.dark .bg-cyan-100,
+.dark .bg-sky-100 {
+  background-color: rgba(14, 165, 233, 0.22);
+}
+
+.dark .border-cyan-100,
+.dark .border-cyan-200,
+.dark .border-sky-100,
+.dark .border-sky-200 {
+  border-color: rgba(56, 189, 248, 0.34);
+}
+
+.dark .text-cyan-600,
+.dark .text-cyan-700,
+.dark .text-cyan-800,
+.dark .text-sky-600,
+.dark .text-sky-700,
+.dark .text-sky-800 {
+  color: #7dd3fc;
+}
+
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: #1e293b;
+}
+
+.dark .hover\:bg-white:hover {
+  background-color: #1e293b;
+}
+
+.dark .ring-slate-100,
+.dark .ring-slate-200 {
+  --tw-ring-color: #334155;
+}
+
+.dark .ring-blue-100 {
+  --tw-ring-color: rgba(59, 130, 246, 0.28);
+}
+
+.dark table {
+  color: #e2e8f0;
+}
+
+.dark option {
+  color: #f8fafc;
+  background-color: #111827;
+}
+
+@media (max-width: 640px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 @media print {
-  body {
+  :root,
+  html.dark {
+    color-scheme: light !important;
+  }
+
+  body,
+  html.dark body {
+    color: #0f172a !important;
     background: #ffffff !important;
   }
 
@@ -92,6 +540,8 @@ pre {
   }
 
   * {
+    color: #0f172a !important;
+    background-color: #ffffff !important;
     box-shadow: none !important;
   }
 
