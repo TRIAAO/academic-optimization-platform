@@ -74,6 +74,14 @@ export const scientometricMetricService = {
     return response.data;
   },
 
+  async analyze(researcherId) {
+    const response = await apiClient.get(
+      `/api/v1/researchers/${researcherId}/scientometric-analysis`
+    );
+
+    return response.data;
+  },
+
   async findById(id) {
     const response = await apiClient.get(`/api/v1/scientometric-metrics/${id}`);
     return response.data;
