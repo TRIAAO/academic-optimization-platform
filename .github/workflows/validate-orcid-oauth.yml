@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          ./mvnw --batch-mode --update-snapshots clean test 2>&1 | tee maven.log
+          bash mvnw --batch-mode --update-snapshots clean test 2>&1 | tee maven.log
 
       - name: Upload Maven diagnostics
         if: always()
