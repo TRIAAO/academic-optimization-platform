@@ -1,0 +1,20 @@
+/*
+ * Ajustes complementares de contraste para classes azuis profundas.
+ * Mantém o modo claro intacto e garante leitura WCAG no modo escuro.
+ */
+.dark .text-blue-950 {
+  color: #eff6ff;
+}
+
+.dark .text-blue-900 {
+  color: #dbeafe;
+}
+
+.dark .text-blue-900\/75 {
+  color: rgba(219, 234, 254, 0.86);
+}
+
+.dark .bg-blue-50.border-blue-200 {
+  background-color: rgba(30, 64, 175, 0.16);
+  border-color: rgba(96, 165, 250, 0.42);
+}
