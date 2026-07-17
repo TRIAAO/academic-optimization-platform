@@ -1,6 +1,6 @@
 package com.triacompany.academic.orcid;
 
-public class OrcidOAuthException extends RuntimeException {
+public class OrcidOAuthException extends IllegalArgumentException {
 
     private final String code;
 
