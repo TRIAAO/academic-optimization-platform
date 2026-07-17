@@ -105,10 +105,9 @@ public class OrcidOAuthStateService {
             }
 
             return new StatePayload(researcherId, actorEmail, issuedAt);
-        } catch (IllegalArgumentException exception) {
-            if (exception instanceof OrcidOAuthException oauthException) {
-                throw oauthException;
-            }
+        } catch (OrcidOAuthException exception) {
+            throw exception;
+        } catch (RuntimeException exception) {
             throw invalidState();
         }
     }
