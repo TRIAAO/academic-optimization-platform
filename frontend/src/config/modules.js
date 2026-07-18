@@ -17,6 +17,7 @@ import {
   Scale,
   Sparkles,
   ShieldCheck,
+  TrendingUp,
   UserRoundSearch
 } from "lucide-react";
 
@@ -29,6 +30,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Visão executiva da plataforma acadêmica."
+  },
+  {
+    key: "institutional-scientometrics",
+    name: "Evolução Institucional",
+    href: "/admin/institutional-scientometrics",
+    icon: TrendingUp,
+    enabled: true,
+    technical: false,
+    description: "Séries históricas de citações, índices e cobertura cientométrica."
   },
   {
     key: "researchers",

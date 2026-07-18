@@ -82,6 +82,20 @@ export const scientometricMetricService = {
     return response.data;
   },
 
+  async findInstitutionalHistory(months = 12, staleAfterMonths = 12) {
+    const response = await apiClient.get(
+      "/api/v1/institutional-scientometrics/history",
+      {
+        params: {
+          months,
+          staleAfterMonths
+        }
+      }
+    );
+
+    return response.data;
+  },
+
   async findById(id) {
     const response = await apiClient.get(`/api/v1/scientometric-metrics/${id}`);
     return response.data;
