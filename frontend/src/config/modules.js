@@ -5,6 +5,7 @@ import {
   BrainCircuit,
   BookOpenCheck,
   ClipboardCheck,
+  CopyCheck,
   FileText,
   GraduationCap,
   History,
@@ -73,6 +74,15 @@ export const ADMIN_MODULES = [
     enabled: true,
     technical: false,
     description: "Confirmação manual de obras acadêmicas."
+  },
+  {
+    key: "bibliographic-deduplication",
+    name: "Deduplicação Bibliográfica",
+    href: "/admin/bibliographic-deduplication",
+    icon: CopyCheck,
+    enabled: true,
+    technical: false,
+    description: "Comparação aproximada ORCID × OpenAlex com confirmação humana."
   },
   {
     key: "crossref",
