@@ -12,6 +12,7 @@ import Audit from "./pages/Audit";
 import Crossref from "./pages/Crossref";
 import Dashboard from "./pages/Dashboard";
 import GoogleScholarChecklist from "./pages/GoogleScholarChecklist";
+import InstitutionalScientometrics from "./pages/InstitutionalScientometrics";
 import Login from "./pages/Login";
 import ManualReview from "./pages/ManualReview";
 import NotFound from "./pages/NotFound";
@@ -36,6 +37,10 @@ export default function App() {
           <Route index element={<Navigate to="/admin/dashboard" replace />} />
 
           <Route path="dashboard" element={<Dashboard />} />
+          <Route
+            path="institutional-scientometrics"
+            element={<InstitutionalScientometrics />}
+          />
 
           <Route path="researchers" element={<Researchers />} />
           <Route path="researchers/:id" element={<ResearcherDetails />} />
