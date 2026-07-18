@@ -159,7 +159,7 @@ export default function InstitutionalScientometrics() {
               description={`Série gerada em ${formatDateTime(history.generatedAt)}.`}
               icon={Database}
               tone="violet"
-              compactValue
+              valueSize="sm"
             />
           </section>
 
