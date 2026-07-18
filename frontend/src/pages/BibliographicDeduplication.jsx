@@ -323,12 +323,14 @@ export default function BibliographicDeduplication() {
         }
       />
 
-      <section className="rounded-3xl border border-blue-200 bg-blue-50 p-5 sm:p-6">
+      <section className="rounded-3xl border border-blue-200 bg-blue-50 p-5 dark:border-blue-700/70 dark:bg-blue-950/35 sm:p-6">
         <div className="flex items-start gap-4">
-          <CopyCheck className="mt-0.5 h-6 w-6 shrink-0 text-blue-700" />
+          <CopyCheck className="mt-0.5 h-6 w-6 shrink-0 text-blue-700 dark:text-blue-300" />
           <div>
-            <h3 className="font-black text-blue-950">Confirmação humana obrigatória</h3>
-            <p className="mt-2 text-sm leading-7 text-blue-900/80">
+            <h3 className="font-black text-blue-950 dark:text-blue-50">
+              Confirmação humana obrigatória
+            </h3>
+            <p className="mt-2 text-sm leading-7 text-blue-900/80 dark:text-blue-100/90">
               A plataforma apenas identifica candidatos. A confirmação indica que as duas
               referências representam a mesma obra intelectual e orienta correções manuais
               nas fontes externas, sem alteração automática do ORCID, OpenAlex ou Google Acadêmico.
@@ -371,7 +373,8 @@ export default function BibliographicDeduplication() {
 
           {selectedResearcher && (
             <p className="mt-4 text-sm text-slate-500">
-              Pesquisador selecionado: <strong className="text-slate-900">{selectedResearcher.fullName}</strong>
+              Pesquisador selecionado:{" "}
+              <strong className="text-slate-900">{selectedResearcher.fullName}</strong>
             </p>
           )}
         </section>
@@ -384,9 +387,21 @@ export default function BibliographicDeduplication() {
       {selectedResearcherId && !loadingCandidates && result && (
         <div className="grid gap-3 sm:grid-cols-4">
           <SummaryCard label="Candidatos" value={result.totalCandidates || 0} />
-          <SummaryCard label="Pendentes" value={result.pendingCandidates || 0} tone="amber" />
-          <SummaryCard label="Confirmados" value={result.confirmedCandidates || 0} tone="emerald" />
-          <SummaryCard label="Rejeitados" value={result.rejectedCandidates || 0} tone="rose" />
+          <SummaryCard
+            label="Pendentes"
+            value={result.pendingCandidates || 0}
+            tone="amber"
+          />
+          <SummaryCard
+            label="Confirmados"
+            value={result.confirmedCandidates || 0}
+            tone="emerald"
+          />
+          <SummaryCard
+            label="Rejeitados"
+            value={result.rejectedCandidates || 0}
+            tone="rose"
+          />
         </div>
       )}
 
@@ -398,13 +413,16 @@ export default function BibliographicDeduplication() {
         />
       )}
 
-      {selectedResearcherId && !loadingCandidates && result && candidates.length === 0 && (
-        <EmptyState
-          icon={CheckCircle2}
-          title="Nenhum candidato identificado"
-          description="Execute a análise após importar obras no ORCID e no OpenAlex. Candidatos só aparecem quando há evidência bibliográfica suficiente."
-        />
-      )}
+      {selectedResearcherId &&
+        !loadingCandidates &&
+        result &&
+        candidates.length === 0 && (
+          <EmptyState
+            icon={CheckCircle2}
+            title="Nenhum candidato identificado"
+            description="Execute a análise após importar obras no ORCID e no OpenAlex. Candidatos só aparecem quando há evidência bibliográfica suficiente."
+          />
+        )}
 
       {candidates.length > 0 && (
         <div className="space-y-4">
