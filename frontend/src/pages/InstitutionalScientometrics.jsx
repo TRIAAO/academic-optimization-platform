@@ -87,26 +87,26 @@ export default function InstitutionalScientometrics() {
         }
       />
 
-      <section className="rounded-3xl border border-blue-200 bg-blue-50 p-5 sm:p-6">
+      <section className="rounded-3xl border border-blue-200 bg-blue-50 p-5 sm:p-6 dark:border-blue-500/50 dark:bg-blue-950/55">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-4">
-            <TrendingUp className="mt-0.5 h-6 w-6 shrink-0 text-blue-700" />
+            <TrendingUp className="mt-0.5 h-6 w-6 shrink-0 text-blue-700 dark:text-blue-300" />
             <div>
-              <h3 className="font-black text-blue-950">
+              <h3 className="font-black text-blue-950 dark:text-blue-100">
                 Evolução institucional baseada em snapshots
               </h3>
-              <p className="mt-2 max-w-4xl text-sm leading-7 text-blue-900/80">
+              <p className="mt-2 max-w-4xl text-sm leading-7 text-blue-800 dark:text-blue-200">
                 Cada mês utiliza a medição mais recente disponível de cada pesquisador até o fim do período. Os valores anteriores são preservados até existir um novo snapshot, sem alterar fontes externas.
               </p>
             </div>
           </div>
 
-          <label className="min-w-48 text-sm font-bold text-blue-950">
+          <label className="min-w-48 text-sm font-bold text-blue-950 dark:text-blue-100">
             Período analisado
             <select
               value={months}
               onChange={(event) => setMonths(Number(event.target.value))}
-              className="mt-2 w-full rounded-xl border border-blue-200 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100"
+              className="mt-2 w-full rounded-xl border border-blue-200 bg-white px-3 py-2.5 text-sm text-slate-950 outline-none focus:border-blue-600 focus:ring-4 focus:ring-blue-100 dark:border-blue-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-blue-400 dark:focus:ring-blue-950"
             >
               {PERIOD_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -149,7 +149,7 @@ export default function InstitutionalScientometrics() {
             <MetricCard
               title="E-mails institucionais"
               value={`${history.currentInstitutionalEmailVerificationRate || 0}%`}
-              description="Percentual verificado entre pesquisadores com medição disponível."
+              description="Verificados entre os pesquisadores medidos."
               icon={MailCheck}
               tone="emerald"
             />
