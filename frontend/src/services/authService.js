@@ -1,74 +1,14 @@
 import { apiClient } from "./apiClient";
 import { STORAGE_KEYS } from "../config/app";
-
-function parseJwtPayload(token) {
-  try {
-    const base64Payload = token.split(".")[1];
-    const normalizedPayload = base64Payload.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = decodeURIComponent(
-      atob(normalizedPayload)
-        .split("")
-        .map((character) => {
-          return `%${`00${character.charCodeAt(0).toString(16)}`.slice(-2)}`;
-        })
-        .join("")
-    );
-
-    return JSON.parse(jsonPayload);
-  } catch {
-    return {};
-  }
-}
-
-function isTokenExpired(token) {
-  const payload = parseJwtPayload(token);
-  const expiration = Number(payload?.exp);
-
-  if (!Number.isFinite(expiration)) {
-    return true;
-  }
-
-  return Date.now() >= expiration * 1000;
-}
+import {
+  extractToken,
+  extractUser,
+  isTokenExpired
+} from "../utils/jwt";
 
 function clearStoredSession() {
   localStorage.removeItem(STORAGE_KEYS.token);
   localStorage.removeItem(STORAGE_KEYS.user);
-}
-
-function extractToken(data) {
-  return (
-    data?.token ||
-    data?.accessToken ||
-    data?.access_token ||
-    data?.jwt ||
-    data?.bearerToken ||
-    null
-  );
-}
-
-function extractUser(data, email, token) {
-  const jwtPayload = token ? parseJwtPayload(token) : {};
-
-  return (
-    data?.user ||
-    data?.profile ||
-    data?.account || {
-      name:
-        data?.name ||
-        jwtPayload?.name ||
-        jwtPayload?.fullName ||
-        jwtPayload?.sub ||
-        "Administrador",
-      email: data?.email || jwtPayload?.email || email,
-      role:
-        data?.role ||
-        jwtPayload?.role ||
-        jwtPayload?.authorities?.[0] ||
-        jwtPayload?.roles?.[0] ||
-        "ADMIN"
-    }
-  );
 }
 
 export const authService = {
