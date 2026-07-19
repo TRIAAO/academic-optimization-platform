@@ -8,7 +8,9 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "echo \"Lint será configurado na próxima etapa\""
+    "lint": "node scripts/lint.mjs",
+    "test": "node --test",
+    "quality": "npm run lint && npm test && npm run build"
   },
   "dependencies": {
     "axios": "latest",
