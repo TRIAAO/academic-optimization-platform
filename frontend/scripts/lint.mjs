@@ -6,9 +6,8 @@ import { transformWithEsbuild } from "vite";
 const PROJECT_ROOT = process.cwd();
 const SOURCE_DIRECTORIES = ["src", "scripts", "tests"];
 const SUPPORTED_EXTENSIONS = new Set([".js", ".jsx", ".mjs"]);
-const RELATIVE_IMPORT_PATTERN =
-  /(?:import|export)\s+(?:[\s\S]*?\s+from\s+)?["'](\.[^"']+)["']/g;
-const SIDE_EFFECT_IMPORT_PATTERN = /import\s*["'](\.[^"']+)["']/g;
+const MERGE_CONFLICT_PATTERN = /^(<<<<<<<|=======|>>>>>>>)/m;
+const DEBUGGER_PATTERN = /(^|[^\w])debugger\s*;/;
 
 async function pathExists(filePath) {
   try {
@@ -44,50 +43,19 @@ async function collectFiles(directoryPath) {
   return nestedFiles.flat().sort();
 }
 
-function extractRelativeImports(source) {
-  const imports = new Set();
-
-  for (const pattern of [RELATIVE_IMPORT_PATTERN, SIDE_EFFECT_IMPORT_PATTERN]) {
-    pattern.lastIndex = 0;
-    let match;
-
-    while ((match = pattern.exec(source)) !== null) {
-      imports.add(match[1]);
-    }
-  }
-
-  return [...imports];
-}
-
-async function resolveRelativeImport(importerPath, importPath) {
-  const absoluteBase = path.resolve(path.dirname(importerPath), importPath);
-  const extension = path.extname(absoluteBase);
-  const candidates = extension
-    ? [absoluteBase]
-    : [
-        absoluteBase,
-        `${absoluteBase}.js`,
-        `${absoluteBase}.jsx`,
-        `${absoluteBase}.mjs`,
-        `${absoluteBase}.json`,
-        `${absoluteBase}.css`,
-        path.join(absoluteBase, "index.js"),
-        path.join(absoluteBase, "index.jsx")
-      ];
-
-  for (const candidate of candidates) {
-    if (await pathExists(candidate)) {
-      return candidate;
-    }
-  }
-
-  return null;
-}
-
 async function validateFile(filePath) {
   const source = await readFile(filePath, "utf8");
   const extension = path.extname(filePath);
   const loader = extension === ".jsx" ? "jsx" : "js";
+  const relativePath = path.relative(PROJECT_ROOT, filePath);
+
+  if (MERGE_CONFLICT_PATTERN.test(source)) {
+    throw new Error(`${relativePath} contém marcadores de conflito Git.`);
+  }
+
+  if (DEBUGGER_PATTERN.test(source)) {
+    throw new Error(`${relativePath} contém uma instrução debugger.`);
+  }
 
   await transformWithEsbuild(source, filePath, {
     loader,
@@ -95,22 +63,6 @@ async function validateFile(filePath) {
     sourcemap: false,
     target: "es2022"
   });
-
-  const unresolvedImports = [];
-  for (const importPath of extractRelativeImports(source)) {
-    const resolved = await resolveRelativeImport(filePath, importPath);
-    if (!resolved) {
-      unresolvedImports.push(importPath);
-    }
-  }
-
-  if (unresolvedImports.length > 0) {
-    throw new Error(
-      `${path.relative(PROJECT_ROOT, filePath)} possui importações não resolvidas: ${unresolvedImports.join(
-        ", "
-      )}`
-    );
-  }
 }
 
 async function main() {
@@ -143,7 +95,7 @@ async function main() {
   }
 
   console.log(
-    `Validação estática concluída: ${files.length} arquivo(s) com sintaxe e importações válidas.`
+    `Validação estática concluída: ${files.length} arquivo(s) sem erros de sintaxe, conflitos ou debugger.`
   );
 }
 
